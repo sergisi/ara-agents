@@ -2,9 +2,17 @@
 
 package apryraz.tworld;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.lang.System.exit;
 
 public class TreasureWorldEnv {
     /**
@@ -34,11 +42,31 @@ public class TreasureWorldEnv {
      * static for easy testing.
      *
      * @param piratesFile name of the file that should contain a
-     *             set of pirate locations in a single line.
+     *                    set of pirate locations in a single line.
      * @return List of all the position where the pirates are.
      **/
     protected static List<Position> loadPiratesLocations(String piratesFile) {
-        return new ArrayList<>();
+        List<Position> pirates = new ArrayList<>();
+        String[] stepsList;
+        String steps = ""; // Prepare a list of movements to try with the FINDER Agent
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(piratesFile));
+            System.out.println("PIRATES FILE OPENED ...");
+            steps = br.readLine();
+            br.close();
+        } catch (FileNotFoundException ex) {
+            System.out.println("MSG.   => Pirates file not found");
+            exit(1);
+        } catch (IOException ex) {
+            Logger.getLogger(TreasureFinder.class.getName()).log(Level.SEVERE, null, ex);
+            exit(2);
+        }
+        stepsList = steps.split(" ");
+        for (String s : stepsList) {
+            String[] coords = s.split(",");
+            pirates.add(new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1])));
+        }
+        return pirates;
     }
 
 
@@ -52,19 +80,50 @@ public class TreasureWorldEnv {
      **/
     public AMessage acceptMessage(AMessage msg) {
         msg.showMessage();
-        if (msg.getComp(0).equals("moveto")) {
-            int nx = Integer.parseInt(msg.getComp(1));
-            int ny = Integer.parseInt(msg.getComp(2));
-            if (withinLimits(nx, ny)) {
-                int pirate = isPirateInMyCell(nx, ny);
+        switch (msg.getComp(0)) {
+            case "moveto": {
+                Position agent = new Position(Integer.parseInt(msg.getComp(1)),
+                        Integer.parseInt(msg.getComp(2)));
+                if (withinLimits(agent)) {
+                    int pirate = isPirateInMyCell(agent);
 
-                return new AMessage("movedto", msg.getComp(1), msg.getComp(2),
-                        (Integer.valueOf(pirate)).toString());
-            } else
-                return new AMessage("notmovedto", msg.getComp(1), msg.getComp(2), "");
+                    return new AMessage("movedto", msg.getComp(1), msg.getComp(2),
+                            (Integer.valueOf(pirate)).toString());
+                } else
+                    return new AMessage("notmovedto", msg.getComp(1), msg.getComp(2), "");
+            }
+            case "detectsat": {
+                Position agent = new Position(Integer.parseInt(msg.getComp(1)),
+                        Integer.parseInt(msg.getComp(2)));
+                if (agent.equals(treasure)) {
+                    return new AMessage("detected", msg.getComp(1),
+                            msg.getComp(2), "1");
+                } else if (agent.distanceOf(treasure) == 1) {
+                    return new AMessage("detected", msg.getComp(1),
+                            msg.getComp(2), "2");
+                } else if (agent.distanceOf(treasure) == 2) {
+                    return new AMessage("detected", msg.getComp(1),
+                            msg.getComp(2), "3");
+                }
+
+                return new AMessage("detected", msg.getComp(1),
+                        msg.getComp(2), "0");
+            }
+            case "treasureup": {
+                Position agent = new Position(Integer.parseInt(msg.getComp(1)),
+                        Integer.parseInt(msg.getComp(2)));
+                if (isPirateInMyCell(agent) == 1) {
+                    if (agent.y > treasure.y) {
+                        return new AMessage("treasureis", msg.getComp(1),
+                                msg.getComp(2), "up");
+                    }
+                    return new AMessage("treasureis", msg.getComp(1),
+                            msg.getComp(2), "down");
+                }
+                return new AMessage("nopirate", msg.getComp(1),
+                        msg.getComp(2), "");
+            }
         }
-        // YOU MUST ANSWER ALSO TO THE OTHER MESSAGE TYPES:
-        //   ( "detectsat", "x" , "y", "" )
         //   ( "treasureup", "x", "y", "" )
         return new AMessage("voidmsg", "", "", "");
 
@@ -73,12 +132,10 @@ public class TreasureWorldEnv {
     /**
      * Check if there is a pirate in position (x,y)
      *
-     * @param x x coordinate of agent position
-     * @param y y coordinate of agent position
+     * @param agent coordinate of agent position
      * @return 1  if (x,y) contains a pirate, 0 otherwise
      **/
-    public int isPirateInMyCell(int x, int y) {
-        Position agent = new Position(x, y);
+    public int isPirateInMyCell(Position agent) {
         for (Position pirate : pirateList) {
             if (agent.equals(pirate)) {
                 return 1;
@@ -92,12 +149,11 @@ public class TreasureWorldEnv {
      * Check if position x,y is within the limits of the
      * WorldDim x WorldDim   world
      *
-     * @param x x coordinate of agent position
-     * @param y y coordinate of agent position
-     * @return true if (x,y) is within the limits of the world
+     * @param p agent position
+     * @return true if position is within the limits of the world
      **/
-    public boolean withinLimits(int x, int y) {
-        return (x >= 1 && x <= WorldDim && y >= 1 && y <= WorldDim);
+    public boolean withinLimits(Position p) {
+        return (p.x >= 1 && p.x <= WorldDim && p.y >= 1 && p.y <= WorldDim);
     }
 
     @Override

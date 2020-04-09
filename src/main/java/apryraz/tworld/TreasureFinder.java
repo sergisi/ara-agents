@@ -46,7 +46,7 @@ public class TreasureFinder {
     /**
      * The object that represents the interface to the Treasure World
      **/
-    TreasureWorldEnv EnvAgent;
+    TreasureWorldEnv envAgent;
     /**
      * SAT solver object that stores the logical boolean formula with the rules
      * and current knowledge about not possible locations for Treasure
@@ -60,7 +60,7 @@ public class TreasureFinder {
     /**
      * Dimension of the world and total size of the world (Dim^2)
      **/
-    int WorldDim, WorldLinealDim;
+    int worldDim, worldLinealDim;
 
     /**
      * This set of variables CAN be use to mark the beginning of different sets
@@ -78,17 +78,15 @@ public class TreasureFinder {
      * rules of the Treasure World, initialize the variables for indicating
      * that we do not have yet any movements to perform, make the initial state.
      *
-     * @param WDim the dimension of the Treasure World
+     * @param wDim the dimension of the Treasure World
      **/
-    public TreasureFinder(int WDim) {
+    public TreasureFinder(int wDim) {
 
-        WorldDim = WDim;
-        WorldLinealDim = WorldDim * WorldDim;
+        worldDim = wDim;
+        worldLinealDim = worldDim * worldDim;
 
         try {
             solver = buildGamma();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(TreasureFinder.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException | ContradictionException ex) {
             Logger.getLogger(TreasureFinder.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -97,7 +95,7 @@ public class TreasureFinder {
         System.out.println("STARTING TREASURE FINDER AGENT...");
 
 
-        tfstate = new TFState(WorldDim);  // Initialize state (matrix) of knowledge with '?'
+        tfstate = new TFState(worldDim);  // Initialize state (matrix) of knowledge with '?'
         tfstate.printState();
     }
 
@@ -111,7 +109,7 @@ public class TreasureFinder {
      **/
     public void setEnvironment(TreasureWorldEnv environment) {
 
-        EnvAgent = environment;
+        envAgent = environment;
     }
 
 
@@ -140,7 +138,7 @@ public class TreasureFinder {
             exit(2);
         }
         stepsList = steps.split(" ");
-        listOfSteps = new ArrayList<Position>(numSteps);
+        listOfSteps = new ArrayList<>(numSteps);
         for (int i = 0; i < numSteps; i++) {
             String[] coords = stepsList[i].split(",");
             listOfSteps.add(new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1])));
@@ -229,7 +227,7 @@ public class TreasureFinder {
         AMessage msg, ans;
 
         msg = new AMessage("moveto", (Integer.valueOf(x)).toString(), (Integer.valueOf(y)).toString(), "");
-        ans = EnvAgent.acceptMessage(msg);
+        ans = envAgent.acceptMessage(msg);
         System.out.println("FINDER => moving to : (" + x + "," + y + ")");
 
         return ans;
@@ -261,7 +259,7 @@ public class TreasureFinder {
 
         msg = new AMessage("detectsat", (Integer.valueOf(agentX)).toString(),
                 (Integer.valueOf(agentY)).toString(), "");
-        ans = EnvAgent.acceptMessage(msg);
+        ans = envAgent.acceptMessage(msg);
         System.out.println("FINDER => detecting at : (" + agentX + "," + agentY + ")");
         return ans;
     }
@@ -300,25 +298,25 @@ public class TreasureFinder {
 
         msg = new AMessage("treasureup", (Integer.valueOf(agentX)).toString(),
                 (Integer.valueOf(agentY)).toString(), "");
-        ans = EnvAgent.acceptMessage(msg);
+        ans = envAgent.acceptMessage(msg);
         System.out.println("FINDER => checking treasure up of : (" + agentX + "," + agentY + ")");
         return ans;
     }
 
-    // TODO: made void because there was no type returning
     public void processPirateAnswer(AMessage ans) throws
             IOException, ContradictionException, TimeoutException {
 
         int y = Integer.parseInt(ans.getComp(2));
-        String isup = ans.getComp(0);
-        // isup should be either "yes" (is up of agent position), or "no"
+        String isUp = ans.getComp(0);
+        if ("treasureis".equals(ans.getComp(0))) {
+            // isUp should be either "yes" (is up of agent position), or "no"
 
-        // Call your function/functions to add the evidence clauses
-        // to Gamma to then be able to infer new NOT possible positions
+            // Call your function/functions to add the evidence clauses
+            // to Gamma to then be able to infer new NOT possible positions
 
-
-        // CALL your functions HERE to update the solver object with more
-        // clauses
+            // CALL your functions HERE to update the solver object with more
+            // clauses
+        }
     }
 
 
@@ -375,13 +373,12 @@ public class TreasureFinder {
      *
      * @return returns the solver object where the formula has been stored
      **/
-    public ISolver buildGamma() throws UnsupportedEncodingException,
-            FileNotFoundException, IOException, ContradictionException {
-        int totalNumVariables = 0;
+    public ISolver buildGamma() throws
+            IOException, ContradictionException {
 
         // You must set this variable to the total number of boolean variables
         // in your formula Gamma
-        // totalNumVariables =  ??
+        int totalNumVariables = 0;
         solver = SolverFactory.newDefault();
         solver.setTimeout(3600);
         solver.newVar(totalNumVariables);
@@ -410,7 +407,7 @@ public class TreasureFinder {
      * @return the integer indentifer of the variable  b_[x,y] in the formula
      **/
     public int coordToLineal(int x, int y, int offset) {
-        return ((x - 1) * WorldDim) + (y - 1) + offset;
+        return ((x - 1) * worldDim) + (y - 1) + offset;
     }
 
     /**
@@ -426,8 +423,8 @@ public class TreasureFinder {
     public int[] linealToCoord(int lineal, int offset) {
         lineal = lineal - offset + 1;
         int[] coords = new int[2];
-        coords[1] = ((lineal - 1) % WorldDim) + 1;
-        coords[0] = (lineal - 1) / WorldDim + 1;
+        coords[1] = ((lineal - 1) % worldDim) + 1;
+        coords[0] = (lineal - 1) / worldDim + 1;
         return coords;
     }
 

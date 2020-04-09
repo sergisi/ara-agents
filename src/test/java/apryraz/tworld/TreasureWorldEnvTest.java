@@ -13,17 +13,16 @@ class TreasureWorldEnvTest {
 
     @BeforeEach
     void setUp() {
-        world = new TreasureWorldEnv(4, 3, 3, "tests/pirates1");
+        world = new TreasureWorldEnv(4, 3, 3, "tests/pirates1.txt");
     }
-
 
 
     @Test
     void loadPiratesLocations() {
         assertEquals(List.of(new Position(1, 3),
-                             new Position(2, 5)),
-                     TreasureWorldEnv.loadPiratesLocations("tests/pirates3.txt")
-                );
+                new Position(2, 5)),
+                TreasureWorldEnv.loadPiratesLocations("tests/pirates3.txt")
+        );
     }
 
     @Test
@@ -40,10 +39,10 @@ class TreasureWorldEnvTest {
         AMessage exp1, exp2, exp3, exp4, exp5, voidmsm;
         exp1 = new AMessage("movedto", "2", "3", "0");
         exp2 = new AMessage("notmovedto", "0", "3", "");
-        exp3 = new AMessage("satis", "", "", "");
-        exp4 = new AMessage("treasureis", "down", "", "");
-        exp5 = new AMessage("nopirate", "", "", "");
-        voidmsm = new AMessage("voidmsm", "", "", "");
+        exp3 = new AMessage("detected", "2", "3", "2");
+        exp4 = new AMessage("treasureis", "4", "4", "up");
+        exp5 = new AMessage("nopirate", "2", "2", "");
+        voidmsm = new AMessage("voidmsg", "", "", "");
         assertEquals(exp1, world.acceptMessage(msg1));
         assertEquals(exp2, world.acceptMessage(msg2));
         assertEquals(exp3, world.acceptMessage(msg3));
@@ -54,16 +53,17 @@ class TreasureWorldEnvTest {
 
     @Test
     void isPirateInMyCell() {
-        assertEquals(0, world.isPirateInMyCell(2, 2));
-        assertEquals(1, world.isPirateInMyCell(4, 4));
+
+        assertEquals(0, world.isPirateInMyCell(new Position(2, 2)));
+        assertEquals(1, world.isPirateInMyCell(new Position(4, 4)));
     }
 
     @Test
     void withinLimits() {
-        assertTrue(world.withinLimits(1, 1));
-        assertTrue(world.withinLimits(2, 1));
-        assertTrue(world.withinLimits(4, 3));
-        assertFalse(world.withinLimits(0, 3));
-        assertFalse(world.withinLimits(5, 3));
+        assertTrue(world.withinLimits(new Position(1, 1)));
+        assertTrue(world.withinLimits(new Position(2, 1)));
+        assertTrue(world.withinLimits(new Position(4, 3)));
+        assertFalse(world.withinLimits(new Position(0, 3)));
+        assertFalse(world.withinLimits(new Position(5, 3)));
     }
 }

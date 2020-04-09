@@ -1,5 +1,8 @@
 package apryraz.tworld;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -68,4 +71,18 @@ public class TFState {
         }
     }
 
+    public static TFState loadStateFromFile(int wDim, String stateFile) throws IOException {
+        TFState tfstate = new TFState(wDim);
+        String row;
+        String[] rowvalues;
+        BufferedReader br = new BufferedReader(new FileReader(stateFile));
+        for (int i = wDim; i >= 1; i--) {
+            row = br.readLine();
+            rowvalues = row.split(" ");
+            for (int j = 1; j <= wDim; j++) {
+                tfstate.set(i, j, rowvalues[j - 1]);
+            }
+        }
+        return tfstate;
+    }
 }

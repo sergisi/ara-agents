@@ -2,6 +2,8 @@ package apryraz.tworld;
 
 import java.util.Objects;
 
+import static java.lang.Math.abs;
+
 public class Position {
     /**
      *
@@ -33,5 +35,9 @@ public class Position {
     public Position(int a, int b) {
         x = a;
         y = b;
+    }
+
+    public int distanceOf(Position p) {
+        return Integer.max(abs(x - p.x), abs(y - p.y));
     }
 }

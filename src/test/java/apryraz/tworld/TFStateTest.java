@@ -3,6 +3,8 @@ package apryraz.tworld;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -38,6 +40,13 @@ class TFStateTest {
     void testEquals() {
         assertEquals(state2, state3);
         assertNotEquals(state1, state2);
+    }
+
+    @Test
+    void testLoadFromFile() throws IOException {
+        TFState state = new TFState(4);
+        state.set(2, 2, "X");
+        assertEquals(state, TFState.loadStateFromFile(4, "tests/states/initial.txt"));
     }
 
 }

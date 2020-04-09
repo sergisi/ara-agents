@@ -30,10 +30,12 @@ public class TreasureWorldEnv {
     }
 
     /**
-     * Load the list of pirates locations
+     * Load the list of pirates locations. It has been made
+     * static for easy testing.
      *
-     * @param: name of the file that should contain a
-     * set of pirate locations in a single line.
+     * @param piratesFile name of the file that should contain a
+     *             set of pirate locations in a single line.
+     * @return List of all the position where the pirates are.
      **/
     protected static List<Position> loadPiratesLocations(String piratesFile) {
         return new ArrayList<>();
@@ -49,27 +51,22 @@ public class TreasureWorldEnv {
      * @return a msg with the answer to return to the agent
      **/
     public AMessage acceptMessage(AMessage msg) {
-        AMessage ans = new AMessage("voidmsg", "", "", "");
-
         msg.showMessage();
         if (msg.getComp(0).equals("moveto")) {
             int nx = Integer.parseInt(msg.getComp(1));
             int ny = Integer.parseInt(msg.getComp(2));
-
             if (withinLimits(nx, ny)) {
                 int pirate = isPirateInMyCell(nx, ny);
 
-                ans = new AMessage("movedto", msg.getComp(1), msg.getComp(2),
+                return new AMessage("movedto", msg.getComp(1), msg.getComp(2),
                         (Integer.valueOf(pirate)).toString());
             } else
-                ans = new AMessage("notmovedto", msg.getComp(1), msg.getComp(2), "");
-
-        } else {
-            // YOU MUST ANSWER ALSO TO THE OTHER MESSAGE TYPES:
-            //   ( "detectsat", "x" , "y", "" )
-            //   ( "treasureup", "x", "y", "" )
+                return new AMessage("notmovedto", msg.getComp(1), msg.getComp(2), "");
         }
-        return ans;
+        // YOU MUST ANSWER ALSO TO THE OTHER MESSAGE TYPES:
+        //   ( "detectsat", "x" , "y", "" )
+        //   ( "treasureup", "x", "y", "" )
+        return new AMessage("voidmsg", "", "", "");
 
     }
 
@@ -81,7 +78,13 @@ public class TreasureWorldEnv {
      * @return 1  if (x,y) contains a pirate, 0 otherwise
      **/
     public int isPirateInMyCell(int x, int y) {
-        return -1;
+        Position agent = new Position(x, y);
+        for (Position pirate : pirateList) {
+            if (agent.equals(pirate)) {
+                return 1;
+            }
+        }
+        return 0;
     }
 
 
@@ -94,7 +97,6 @@ public class TreasureWorldEnv {
      * @return true if (x,y) is within the limits of the world
      **/
     public boolean withinLimits(int x, int y) {
-
         return (x >= 1 && x <= WorldDim && y >= 1 && y <= WorldDim);
     }
 

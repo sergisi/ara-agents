@@ -228,7 +228,7 @@ public class TreasureFinder {
         // Tell the EnvironmentAgentID that we want  to move
         AMessage msg, ans;
 
-        msg = new AMessage("moveto", (new Integer(x)).toString(), (new Integer(y)).toString(), "");
+        msg = new AMessage("moveto", (Integer.valueOf(x)).toString(), (Integer.valueOf(y)).toString(), "");
         ans = EnvAgent.acceptMessage(msg);
         System.out.println("FINDER => moving to : (" + x + "," + y + ")");
 
@@ -259,8 +259,8 @@ public class TreasureFinder {
     public AMessage DetectsAt() {
         AMessage msg, ans;
 
-        msg = new AMessage("detectsat", (new Integer(agentX)).toString(),
-                (new Integer(agentY)).toString(), "");
+        msg = new AMessage("detectsat", (Integer.valueOf(agentX)).toString(),
+                (Integer.valueOf(agentY)).toString(), "");
         ans = EnvAgent.acceptMessage(msg);
         System.out.println("FINDER => detecting at : (" + agentX + "," + agentY + ")");
         return ans;
@@ -298,8 +298,8 @@ public class TreasureFinder {
     public AMessage IsTreasureUpOrDown() {
         AMessage msg, ans;
 
-        msg = new AMessage("treasureup", (new Integer(agentX)).toString(),
-                (new Integer(agentY)).toString(), "");
+        msg = new AMessage("treasureup", (Integer.valueOf(agentX)).toString(),
+                (Integer.valueOf(agentY)).toString(), "");
         ans = EnvAgent.acceptMessage(msg);
         System.out.println("FINDER => checking treasure up of : (" + agentX + "," + agentY + ")");
         return ans;
@@ -377,7 +377,7 @@ public class TreasureFinder {
      **/
     public ISolver buildGamma() throws UnsupportedEncodingException,
             FileNotFoundException, IOException, ContradictionException {
-        int totalNumVariables;
+        int totalNumVariables = 0;
 
         // You must set this variable to the total number of boolean variables
         // in your formula Gamma

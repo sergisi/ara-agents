@@ -113,9 +113,9 @@ public class TreasureFinderTest {
         // You should make TreasureFinder and TreasureWorldEnv objects to  test.
         // Then load sequence of target states, load sequence of steps into the bAgent
         // and then test the sequence calling testMakeSimpleStep once for each step.
-        TreasureFinder TAgent;
+        TreasureFinder TAgent = null;
         // load information about the World into the EnvAgent
-        TreasureWorldEnv EnvAgent;
+        TreasureWorldEnv EnvAgent = null;
         // Load list of states
         ArrayList<TFState> seqOfStates;
 

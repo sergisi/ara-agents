@@ -2,12 +2,18 @@
 
 package apryraz.tworld;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 public class TreasureWorldEnv {
     /**
      * X,Y position of Treasure and world dimension
      **/
-    int TreasureX, TreasureY, WorldDim;
+    private int WorldDim;
 
+    private List<Position> pirateList;
+    private Position treasure;
 
     /**
      * Class constructor
@@ -18,11 +24,9 @@ public class TreasureWorldEnv {
      * @param piratesFile File with list of pirates locations
      **/
     public TreasureWorldEnv(int dim, int tx, int ty, String piratesFile) {
-
-        TreasureX = tx;
-        TreasureY = ty;
+        treasure = new Position(tx, ty);
         WorldDim = dim;
-        loadPiratesLocations(piratesFile);
+        pirateList = loadPiratesLocations(piratesFile);
     }
 
     /**
@@ -31,9 +35,8 @@ public class TreasureWorldEnv {
      * @param: name of the file that should contain a
      * set of pirate locations in a single line.
      **/
-    public void loadPiratesLocations(String piratesFile) {
-
-
+    protected static List<Position> loadPiratesLocations(String piratesFile) {
+        return new ArrayList<>();
     }
 
 
@@ -57,7 +60,7 @@ public class TreasureWorldEnv {
                 int pirate = isPirateInMyCell(nx, ny);
 
                 ans = new AMessage("movedto", msg.getComp(1), msg.getComp(2),
-                        (new Integer(pirate)).toString());
+                        (Integer.valueOf(pirate)).toString());
             } else
                 ans = new AMessage("notmovedto", msg.getComp(1), msg.getComp(2), "");
 
@@ -95,4 +98,39 @@ public class TreasureWorldEnv {
         return (x >= 1 && x <= WorldDim && y >= 1 && y <= WorldDim);
     }
 
+    @Override
+    public String toString() {
+        return "TreasureWorldEnv{" +
+                "WorldDim=" + WorldDim +
+                ", pirateList=" + pirateList +
+                ", treasure=" + treasure +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TreasureWorldEnv that = (TreasureWorldEnv) o;
+        return WorldDim == that.WorldDim &&
+                Objects.equals(pirateList, that.pirateList) &&
+                Objects.equals(treasure, that.treasure);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(WorldDim, pirateList, treasure);
+    }
+
+    public int getWorldDim() {
+        return WorldDim;
+    }
+
+    public Position getTreasure() {
+        return treasure;
+    }
+
+    public List<Position> getPirateList() {
+        return pirateList;
+    }
 }

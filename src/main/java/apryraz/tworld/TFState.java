@@ -1,5 +1,8 @@
 package apryraz.tworld;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class TFState {
     /**
      *
@@ -22,23 +25,36 @@ public class TFState {
         }
     }
 
-    public void set(int i, int j, String val) {
+    public String get(int i, int j) {
+        return matrix[i - 1][j - 1];
+    }
 
+    public void set(int i, int j, String val) {
         matrix[i - 1][j - 1] = val;
     }
 
-    public boolean equals(Object obj) {
-        TFState tfstate2 = (TFState) obj;
-        boolean status = true;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TFState tfState = (TFState) o;
+        return wDim == tfState.wDim &&
+                Arrays.deepEquals(matrix, tfState.matrix);
+    }
 
-        for (int i = 0; i < wDim; i++) {
-            for (int j = 0; j < wDim; j++) {
-                if (!matrix[i][j].equals(tfstate2.matrix[i][j]))
-                    status = false;
-            }
-        }
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(wDim);
+        result = 31 * result + Arrays.hashCode(matrix);
+        return result;
+    }
 
-        return status;
+    @Override
+    public String toString() {
+        return "TFState{" +
+                "wDim=" + wDim +
+                ", matrix=" + Arrays.toString(matrix) +
+                '}';
     }
 
     public void printState() {

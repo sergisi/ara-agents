@@ -3,10 +3,9 @@ package apryraz.tworld;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class MoreTreasureFinderTests {
+public class MoreTreasureFinderTest {
 
     TreasureFinder tfinder = new TreasureFinder(4);
 

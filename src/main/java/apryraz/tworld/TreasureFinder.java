@@ -278,7 +278,7 @@ public class TreasureFinder {
         int x = Integer.parseInt(ans.getComp(1));
         int y = Integer.parseInt(ans.getComp(2));
         String detects = ans.getComp(0);
-
+        
         // Call your function/functions to add the evidence clauses
         // to Gamma to then be able to infer new NOT possible positions
 

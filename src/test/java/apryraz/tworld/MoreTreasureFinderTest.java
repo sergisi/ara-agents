@@ -2,6 +2,7 @@ package apryraz.tworld;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.sat4j.specs.ContradictionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -35,7 +36,21 @@ public class MoreTreasureFinderTest {
 
     @Test
     void testNumberOfClausesGamma() {
-        assertEquals(1811, tfinder.solver.nConstraints());
+        assertEquals(2001, tfinder.solver.nConstraints());
+    }
+
+    @Test
+    void testEspecificNumberOfClauses() throws ContradictionException {
+        tfinder.createSolver(); // restarts solver
+        assertEquals(0, tfinder.solver.nConstraints());
+        tfinder.addAtLeastOneTresureRule();
+        assertEquals(1, tfinder.solver.nConstraints());
+        tfinder.addDetectorReturned1Rule();
+        assertEquals(601, tfinder.solver.nConstraints());
+        tfinder.addDetectorReturnedOtherRule();
+        assertEquals(1876, tfinder.solver.nConstraints()); // is it?
+        tfinder.addPirateRule();
+        assertEquals(2001, tfinder.solver.nConstraints());
     }
 
     @Test

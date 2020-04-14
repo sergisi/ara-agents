@@ -383,18 +383,114 @@ public class TreasureFinder {
 
         // You must set this variable to the total number of boolean variables
         // in your formula Gamma
-        int totalNumVariables = getTotalNumVariables();
-        solver = SolverFactory.newDefault();
-        solver.setTimeout(3600);
-        solver.newVar(totalNumVariables);
+        createSolver();
         // This variable is used to generate, in a particular sequential order,
         // the variable indentifiers of all the variables
         actualLiteral = 1;
 
-        // call here functions to add the differen sets of clauses
+        // call here functions to add the different sets of clauses
         // of Gamma to the solver object
-
+        addAtLeastOneTresureRule();
+        addDetectorReturned1Rule();
+        addDetectorReturnedOtherRule();
+        addPirateRule();
         return solver;
+    }
+
+    protected void createSolver() {
+        int totalNumVariables = getTotalNumVariables();
+        solver = SolverFactory.newDefault();
+        solver.setTimeout(3600);
+        solver.newVar(totalNumVariables);
+    }
+
+    protected void addPirateRule() throws ContradictionException {
+        for (int pirate = 0; pirate < worldDim; pirate++) {
+            for (int i = 1; i <= worldDim; i++) {
+                for (int j = 1; j <= worldDim; j++) {
+                    int[] clause = new int[3];
+                    clause[0] = -(pirate + pirateOffset);
+                    if (pirate + 1 <= j) {
+                        clause[1] = upOffset;
+                    } else {
+                        clause[1] = -upOffset;
+                    }
+                    clause[2] = coordToLineal(i, j, treasureFutureOffset);
+                    solver.addClause(new VecInt(clause));
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds all rules of detector without the rule specified
+     * at addDetectorReturned1Rule
+     */
+    protected void addDetectorReturnedOtherRule() throws ContradictionException {
+        spy1=0;
+        spy2=0;
+        spy3=0;
+        for (int i1 = 1; i1 <= worldDim; i1++) {
+            for (int j1 = 1; j1 <= worldDim; j1++) {
+                Position pos1 = new Position(i1, j1);
+                for (int i2 = 1; i2 <= worldDim; i2++) {
+                    for (int j2 = 1; j2 <= worldDim; j2++) {
+                        Position pos2 = new Position(i2, j2);
+                        addDetectorRulePosition(pos1, pos2);
+                    }
+                }
+            }
+        }
+    }
+    int spy1=0, spy2=0, spy3=0;
+
+     protected void addDetectorRulePosition(Position pos1, Position pos2) throws ContradictionException {
+        int distance = pos1.distanceOf(pos2);
+        if (distance < 3) {
+            ruleOffset(pos1, pos2, 0);
+            spy1++;
+        }
+        if (distance != 1) {
+            ruleOffset(pos1, pos2, 2);
+            spy2++;
+        }
+        if (distance != 2) {
+            ruleOffset(pos1, pos2, 3);
+            spy3++;
+        }
+    }
+
+    private void ruleOffset(Position pos1, Position pos2, int detector) throws ContradictionException {
+        int[] clause = new int[2];
+        clause[0] = -coordToLineal(pos1, detectorOffsets[detector]);
+        clause[1] = -coordToLineal(pos2, treasureFutureOffset);
+        solver.addClause(new VecInt(clause));
+    }
+
+    /**
+     * Adds \not d_{i,j,1}^t \vee \not tr_{i', j'}^{t + 1}
+     */
+    protected void addDetectorReturned1Rule() throws ContradictionException {
+        for (int i = 1; i <= worldDim; i++) {
+            for (int j = 1; j <= worldDim; j++) {
+                for (int k = treasureFutureOffset; k < solver.nVars(); k++) {
+                    if (coordToLineal(i, j, treasureFutureOffset) != k) {
+                        int[] clause = new int[2];
+                        clause[0] = -coordToLineal(i, j, detectorOffsets[1]);
+                        clause[1] = -k;
+                        solver.addClause(new VecInt(clause));
+                    }
+                }
+            }
+        }
+    }
+
+    protected void addAtLeastOneTresureRule() throws ContradictionException {
+        int[] constr = new int[pirateOffset - treasurePastOffset];
+        for (int i = treasurePastOffset; i < pirateOffset; i++) {
+            constr[i] = i + 1;  // clause with 1 2 3 4 ... pirateOffset 0
+        }
+        solver.addClause(new VecInt(constr));
     }
 
     private int getTotalNumVariables() {
@@ -402,10 +498,10 @@ public class TreasureFinder {
         pirateOffset = worldDim * worldDim;
         upOffset = pirateOffset + worldDim;
         detectorOffsets[0] = upOffset + 1;
-        for (int i = 0; i < 3; i++){
+        for (int i = 0; i < 3; i++) {
             detectorOffsets[i + 1] = detectorOffsets[i] + pirateOffset; //Pirate offset is n^2
         }
-        treasureFutureOffset =  detectorOffsets[3] + pirateOffset;
+        treasureFutureOffset = detectorOffsets[3] + pirateOffset;
         return treasureFutureOffset + pirateOffset;
     }
 
@@ -425,6 +521,22 @@ public class TreasureFinder {
      **/
     public int coordToLineal(int x, int y, int offset) {
         return ((x - 1) * worldDim) + (y - 1) + offset;
+    }
+
+    /**
+     * Convert a coordinate pair (x,y) to the integer value  t_[x,y]
+     * of variable that stores that information in the formula, using
+     * offset as the initial index for that subset of position variables
+     * (past and future position variables have different variables, so different
+     * offset values)
+     *
+     * @param pos    postion coordinate
+     * @param offset initial value for the subset of position variables
+     *               (past or future subset)
+     * @return the integer indentifer of the variable  b_[x,y] in the formula
+     **/
+    public int coordToLineal(Position pos, int offset) {
+        return coordToLineal(pos.x, pos.y, offset);
     }
 
     /**

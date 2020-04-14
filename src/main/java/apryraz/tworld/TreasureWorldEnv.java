@@ -81,52 +81,61 @@ public class TreasureWorldEnv {
     public AMessage acceptMessage(AMessage msg) {
         msg.showMessage();
         switch (msg.getComp(0)) {
-            case "moveto": {
-                Position agent = new Position(Integer.parseInt(msg.getComp(1)),
-                        Integer.parseInt(msg.getComp(2)));
-                if (withinLimits(agent)) {
-                    int pirate = isPirateInMyCell(agent);
-
-                    return new AMessage("movedto", msg.getComp(1), msg.getComp(2),
-                            (Integer.valueOf(pirate)).toString());
-                } else
-                    return new AMessage("notmovedto", msg.getComp(1), msg.getComp(2), "");
-            }
-            case "detectsat": {
-                Position agent = new Position(Integer.parseInt(msg.getComp(1)),
-                        Integer.parseInt(msg.getComp(2)));
-                if (agent.equals(treasure)) {
-                    return new AMessage("detected", msg.getComp(1),
-                            msg.getComp(2), "1");
-                } else if (agent.distanceOf(treasure) == 1) {
-                    return new AMessage("detected", msg.getComp(1),
-                            msg.getComp(2), "2");
-                } else if (agent.distanceOf(treasure) == 2) {
-                    return new AMessage("detected", msg.getComp(1),
-                            msg.getComp(2), "3");
-                }
-
-                return new AMessage("detected", msg.getComp(1),
-                        msg.getComp(2), "0");
-            }
-            case "treasureup": {
-                Position agent = new Position(Integer.parseInt(msg.getComp(1)),
-                        Integer.parseInt(msg.getComp(2)));
-                if (isPirateInMyCell(agent) == 1) {
-                    if (agent.y > treasure.y) {
-                        return new AMessage("treasureis", msg.getComp(1),
-                                msg.getComp(2), "up");
-                    }
-                    return new AMessage("treasureis", msg.getComp(1),
-                            msg.getComp(2), "down");
-                }
-                return new AMessage("nopirate", msg.getComp(1),
-                        msg.getComp(2), "");
-            }
+            case "moveto":
+                return getMoveTo(msg);
+            case "detectsat":
+                return getDetectSat(msg);
+            case "treasureup":
+                return getTreasureUp(msg);
         }
         //   ( "treasureup", "x", "y", "" )
         return new AMessage("voidmsg", "", "", "");
 
+    }
+
+    private AMessage getMoveTo(AMessage msg) {
+        Position agent = new Position(Integer.parseInt(msg.getComp(1)),
+                Integer.parseInt(msg.getComp(2)));
+        if (withinLimits(agent)) {
+            int pirate = isPirateInMyCell(agent);
+
+            return new AMessage("movedto", msg.getComp(1), msg.getComp(2),
+                    (Integer.valueOf(pirate)).toString());
+        } else
+            return new AMessage("notmovedto", msg.getComp(1), msg.getComp(2), "");
+    }
+
+    private AMessage getDetectSat(AMessage msg) {
+        Position agent = new Position(Integer.parseInt(msg.getComp(1)),
+                Integer.parseInt(msg.getComp(2)));
+        if (agent.equals(treasure)) {
+            return new AMessage("detected", msg.getComp(1),
+                    msg.getComp(2), "1");
+        } else if (agent.distanceOf(treasure) == 1) {
+            return new AMessage("detected", msg.getComp(1),
+                    msg.getComp(2), "2");
+        } else if (agent.distanceOf(treasure) == 2) {
+            return new AMessage("detected", msg.getComp(1),
+                    msg.getComp(2), "3");
+        }
+
+        return new AMessage("detected", msg.getComp(1),
+                msg.getComp(2), "0");
+    }
+
+    private AMessage getTreasureUp(AMessage msg) {
+        Position agent = new Position(Integer.parseInt(msg.getComp(1)),
+                Integer.parseInt(msg.getComp(2)));
+        if (isPirateInMyCell(agent) == 1) {
+            if (agent.y > treasure.y) {
+                return new AMessage("treasureis", msg.getComp(1),
+                        msg.getComp(2), "up");
+            }
+            return new AMessage("treasureis", msg.getComp(1),
+                    msg.getComp(2), "down");
+        }
+        return new AMessage("nopirate", msg.getComp(1),
+                msg.getComp(2), "");
     }
 
     /**

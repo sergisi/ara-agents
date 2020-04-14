@@ -8,7 +8,10 @@ import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.ISolver;
 import org.sat4j.specs.TimeoutException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,11 +70,13 @@ public class TreasureFinder {
      * of variables in your propositional formula (but you may have more sets of
      * variables in your solution).
      **/
-    int TreasurePastOffset;
-    int TreasureFutureOffset;
-    int DetectorOffset;
-    int actualLiteral;
+    int treasurePastOffset;
+    int pirateOffset;
+    int upOffset;
+    int[] detectorOffsets = new int[4];
+    int treasureFutureOffset;
 
+    int actualLiteral;
 
     /**
      * The class constructor must create the initial Boolean formula with the
@@ -347,9 +352,9 @@ public class TreasureFinder {
             ContradictionException, TimeoutException {
         // EXAMPLE code to check this for position (2,3):
         // Get variable number for position 2,3 in past variables
-        int linealIndex = coordToLineal(2, 3, TreasureFutureOffset);
+        int linealIndex = coordToLineal(2, 3, treasureFutureOffset);
         // Get the same variable, but in the past subset
-        int linealIndexPast = coordToLineal(2, 3, TreasurePastOffset);
+        int linealIndexPast = coordToLineal(2, 3, treasurePastOffset);
 
         VecInt variablePositive = new VecInt();
         variablePositive.insertFirst(linealIndex);
@@ -378,7 +383,7 @@ public class TreasureFinder {
 
         // You must set this variable to the total number of boolean variables
         // in your formula Gamma
-        int totalNumVariables = 0;
+        int totalNumVariables = getTotalNumVariables();
         solver = SolverFactory.newDefault();
         solver.setTimeout(3600);
         solver.newVar(totalNumVariables);
@@ -390,6 +395,18 @@ public class TreasureFinder {
         // of Gamma to the solver object
 
         return solver;
+    }
+
+    private int getTotalNumVariables() {
+        treasurePastOffset = 0;
+        pirateOffset = worldDim * worldDim;
+        upOffset = pirateOffset + worldDim;
+        detectorOffsets[0] = upOffset + 1;
+        for (int i = 0; i < 3; i++){
+            detectorOffsets[i + 1] = detectorOffsets[i] + pirateOffset; //Pirate offset is n^2
+        }
+        treasureFutureOffset =  detectorOffsets[3] + pirateOffset;
+        return treasureFutureOffset + pirateOffset;
     }
 
 

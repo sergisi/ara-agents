@@ -391,8 +391,7 @@ public class TreasureFinder {
         // call here functions to add the different sets of clauses
         // of Gamma to the solver object
         addAtLeastOneTresureRule();
-        addDetectorReturned1Rule();
-        addDetectorReturnedOtherRule();
+        addDetectorRule();
         addPirateRule();
         return solver;
     }
@@ -426,10 +425,7 @@ public class TreasureFinder {
      * Adds all rules of detector without the rule specified
      * at addDetectorReturned1Rule
      */
-    protected void addDetectorReturnedOtherRule() throws ContradictionException {
-        spy1=0;
-        spy2=0;
-        spy3=0;
+    protected void addDetectorRule() throws ContradictionException {
         for (int i1 = 1; i1 <= worldDim; i1++) {
             for (int j1 = 1; j1 <= worldDim; j1++) {
                 Position pos1 = new Position(i1, j1);
@@ -442,21 +438,20 @@ public class TreasureFinder {
             }
         }
     }
-    int spy1=0, spy2=0, spy3=0;
 
-     protected void addDetectorRulePosition(Position pos1, Position pos2) throws ContradictionException {
+    protected void addDetectorRulePosition(Position pos1, Position pos2) throws ContradictionException {
         int distance = pos1.distanceOf(pos2);
         if (distance < 3) {
             ruleOffset(pos1, pos2, 0);
-            spy1++;
+        }
+        if (distance != 0) {
+            ruleOffset(pos1, pos2, 1);
         }
         if (distance != 1) {
             ruleOffset(pos1, pos2, 2);
-            spy2++;
         }
         if (distance != 2) {
             ruleOffset(pos1, pos2, 3);
-            spy3++;
         }
     }
 
@@ -465,24 +460,6 @@ public class TreasureFinder {
         clause[0] = -coordToLineal(pos1, detectorOffsets[detector]);
         clause[1] = -coordToLineal(pos2, treasureFutureOffset);
         solver.addClause(new VecInt(clause));
-    }
-
-    /**
-     * Adds \not d_{i,j,1}^t \vee \not tr_{i', j'}^{t + 1}
-     */
-    protected void addDetectorReturned1Rule() throws ContradictionException {
-        for (int i = 1; i <= worldDim; i++) {
-            for (int j = 1; j <= worldDim; j++) {
-                for (int k = treasureFutureOffset; k < solver.nVars(); k++) {
-                    if (coordToLineal(i, j, treasureFutureOffset) != k) {
-                        int[] clause = new int[2];
-                        clause[0] = -coordToLineal(i, j, detectorOffsets[1]);
-                        clause[1] = -k;
-                        solver.addClause(new VecInt(clause));
-                    }
-                }
-            }
-        }
     }
 
     protected void addAtLeastOneTresureRule() throws ContradictionException {

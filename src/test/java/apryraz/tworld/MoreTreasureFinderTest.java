@@ -45,9 +45,7 @@ public class MoreTreasureFinderTest {
         assertEquals(0, tfinder.solver.nConstraints());
         tfinder.addAtLeastOneTresureRule();
         assertEquals(1, tfinder.solver.nConstraints());
-        tfinder.addDetectorReturned1Rule();
-        assertEquals(601, tfinder.solver.nConstraints());
-        tfinder.addDetectorReturnedOtherRule();
+        tfinder.addDetectorRule();
         assertEquals(1876, tfinder.solver.nConstraints()); // is it?
         tfinder.addPirateRule();
         assertEquals(2001, tfinder.solver.nConstraints());

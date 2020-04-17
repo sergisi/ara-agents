@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Arch Linux) (preloaded format=pdflatex 2020.4.6)  10 APR 2020 18:35
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Arch Linux) (preloaded format=pdflatex 2020.4.6)  14 APR 2020 20:51
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -624,6 +624,11 @@ Underfull \hbox (badness 10000) in paragraph at lines 25--33
 
  []
 
+
+Overfull \hbox (38.33243pt too wide) detected at line 46
+[]
+ []
+
 [1]) (./ex2/ex2.tex) (./ex3/ex3.tex) [2] (./doc.aux) ) 
 Here is how much of TeX's memory you used:
  16968 strings out of 492167
@@ -644,7 +649,7 @@ nts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb
 ></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/t
 exmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/share/texmf-dist/fonts
 /type1/public/amsfonts/cm/cmsy7.pfb>
-Output written on doc.pdf (4 pages, 122159 bytes).
+Output written on doc.pdf (4 pages, 122168 bytes).
 PDF statistics:
  68 PDF objects out of 1000 (max. 8388607)
  49 compressed objects within 1 object stream

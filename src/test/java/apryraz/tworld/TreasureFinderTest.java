@@ -37,6 +37,10 @@ public class TreasureFinderTest {
         //  the targetState after performing action runNextStep with bAgent
         tAgent.runNextStep();
         TFState currentState = tAgent.getState();
+        System.out.println("Expected");
+        targetState.printState();
+        System.out.println("Actually");
+        currentState.printState();
         assertEquals(currentState, targetState);
     }
 
@@ -141,7 +145,8 @@ public class TreasureFinderTest {
     public void TWorldTest1() throws
             IOException, ContradictionException, TimeoutException {
         // Example test for 4x4 world , Treasure at 3,3 and 5 steps
-        testMakeSeqOfSteps(1, 3, 3, 5, "tests/steps1.txt", "tests/states1.txt", "tests/pirates1.txt");
+        testMakeSeqOfSteps(4, 3, 3, 5, "tests/steps1.txt", "tests/states1.txt",
+                "tests/pirates1.txt");
     }
 
 }

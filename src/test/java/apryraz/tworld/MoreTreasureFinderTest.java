@@ -2,14 +2,14 @@ package apryraz.tworld;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.sat4j.core.Vec;
 import org.sat4j.core.VecInt;
-import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.ContradictionException;
-import org.sat4j.specs.ISolver;
 import org.sat4j.specs.TimeoutException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MoreTreasureFinderTest {
 
@@ -76,6 +76,16 @@ public class MoreTreasureFinderTest {
         tfinder.processPirateAnswer(message);
         int[] expected = new int[] {tfinder.pirateOffset + 4 - 1, tfinder.upOffset};
         assertEquals(new VecInt(expected), tfinder.assumptions);
+    }
+
+    @Test
+    void testInferenceIsOkay() throws TimeoutException, ContradictionException {
+        ArrayList<Position> steps = new ArrayList<>();
+        steps.add(new Position(1,1));
+        tfinder.setListOfSteps(steps);
+        tfinder.runNextStep();
+        assertEquals("X", tfinder.tfstate.get(1, 1));
+        assertEquals("?", tfinder.tfstate.get(3, 1));
     }
 
 }

@@ -174,7 +174,7 @@ public class TreasureFinder {
             processPirateAnswer(IsTreasureUpOrDown());
         }
         performInferenceQuestions();
-        tfstate.printState();      // Print the resulting knowledge matrix
+        tfstate.printState();  // Print the resulting knowledge matrix
     }
 
 
@@ -188,7 +188,6 @@ public class TreasureFinder {
      **/
     public AMessage moveToNext() {
         Position nextPosition;
-
         if (idNextStep < numMovements) {
             nextPosition = listOfSteps.get(idNextStep);
             idNextStep = idNextStep + 1;
@@ -512,5 +511,7 @@ public class TreasureFinder {
         return new Position(x, y);
     }
 
-
+    public void setListOfSteps(ArrayList<Position> listOfSteps) {
+        this.listOfSteps = listOfSteps;
+    }
 }

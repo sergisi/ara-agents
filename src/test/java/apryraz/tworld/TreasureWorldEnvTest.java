@@ -27,7 +27,6 @@ class TreasureWorldEnvTest {
 
     @Test
     void acceptMessage() {
-        //TODO: maybe we will need to change response messages.
         AMessage msg1, msg2, msg3, msg4, msg5, error;
         msg1 = new AMessage("moveto", "2", "3", "");
         msg2 = new AMessage("moveto", "0", "3", "");

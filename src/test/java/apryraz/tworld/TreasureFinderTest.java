@@ -54,7 +54,7 @@ public class TreasureFinderTest {
             row = br.readLine();
             rowvalues = row.split(" ");
             for (int j = 1; j <= wDim; j++) {
-                tfstate.set(i, j, rowvalues[j - 1]);
+                tfstate.set(new Position(i, j), rowvalues[j - 1]);
             }
         }
         return tfstate;

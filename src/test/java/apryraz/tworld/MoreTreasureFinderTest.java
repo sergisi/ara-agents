@@ -2,10 +2,13 @@ package apryraz.tworld;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.sat4j.core.VecInt;
+import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.ContradictionException;
+import org.sat4j.specs.ISolver;
+import org.sat4j.specs.TimeoutException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MoreTreasureFinderTest {
 
@@ -40,6 +43,11 @@ public class MoreTreasureFinderTest {
     }
 
     @Test
+    void testIfSatisfiable() throws TimeoutException {
+        assertTrue(tfinder.solver.isSatisfiable());
+    }
+
+    @Test
     void testEspecificNumberOfClauses() throws ContradictionException {
         tfinder.createSolver(); // restarts solver
         assertEquals(0, tfinder.solver.nConstraints());
@@ -60,4 +68,5 @@ public class MoreTreasureFinderTest {
     void testProcessPirateAnswer() {
         fail();
     }
+
 }

@@ -8,7 +8,7 @@ public class Position {
     /**
      *
      **/
-    public int x, y;
+    public final int x, y;
 
     @Override
     public String toString() {

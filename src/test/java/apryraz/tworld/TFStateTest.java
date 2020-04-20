@@ -31,7 +31,7 @@ class TFStateTest {
 
     @Test
     void set() {
-        state1.set(2, 1, "T");
+        state1.set(new Position(2, 1), "T");
         assertEquals("T", state1.get(2, 1));
 
     }
@@ -45,7 +45,7 @@ class TFStateTest {
     @Test
     void testLoadFromFile() throws IOException {
         TFState state = new TFState(4);
-        state.set(2, 2, "X");
+        state.set(new Position(2, 2), "X");
         assertEquals(state, TFState.loadStateFromFile(4, "tests/states/initial.txt"));
     }
 

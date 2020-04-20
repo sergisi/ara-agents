@@ -2,10 +2,12 @@
 
 package apryraz.tworld;
 
+import org.sat4j.core.Vec;
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.ISolver;
+import org.sat4j.specs.IVecInt;
 import org.sat4j.specs.TimeoutException;
 
 import java.io.BufferedReader;
@@ -40,7 +42,7 @@ public class TreasureFinder {
      * Array of clauses that represent conclusiones obtained in the last
      * call to the inference function, but rewritten using the "past" variables
      **/
-    ArrayList<VecInt> futureToPast = null;
+    Vec<IVecInt> futureToPast = null;
     /**
      * the current state of knowledge of the agent (what he knows about
      * every position of the world)
@@ -77,6 +79,9 @@ public class TreasureFinder {
     int treasureFutureOffset;
 
     int actualLiteral;
+
+    // Saves assumptions found at the current step
+    VecInt assumptions;
 
     /**
      * The class constructor must create the initial Boolean formula with the
@@ -174,7 +179,7 @@ public class TreasureFinder {
         // Add the conclusions obtained in the previous step
         // but as clauses that use the "past" variables
         addLastFutureClausesToPastClauses();
-
+        this.assumptions = new VecInt();
         // Ask to move, and check whether it was successful
         // Also, record if a pirate was found at that position
         processMoveAnswer(moveToNext());
@@ -314,13 +319,11 @@ public class TreasureFinder {
         int y = Integer.parseInt(ans.getComp(2));
         String isUp = ans.getComp(0);
         if ("treasureis".equals(ans.getComp(0))) {
-            // isUp should be either "yes" (is up of agent position), or "no"
-
-            // Call your function/functions to add the evidence clauses
-            // to Gamma to then be able to infer new NOT possible positions
-
-            // CALL your functions HERE to update the solver object with more
-            // clauses
+            // treasureis x y up|down
+            assumptions.push(pirateOffset - 1 + Integer.parseInt(ans.getComp(2))); // Existeix pirata y
+            assumptions.push(("up".equals(ans.getComp(3))) ? upOffset : -upOffset);
+        } else {
+            System.out.println("THIS SHOULDN'T HAPPEN: PIRATE IS NOT CONSISTENT");
         }
     }
 
@@ -332,8 +335,7 @@ public class TreasureFinder {
      **/
     public void addLastFutureClausesToPastClauses() throws IOException,
             ContradictionException, TimeoutException {
-
-
+        solver.addAllClauses(this.futureToPast);
     }
 
     /**
@@ -350,26 +352,18 @@ public class TreasureFinder {
      **/
     public void performInferenceQuestions() throws IOException,
             ContradictionException, TimeoutException {
-        // EXAMPLE code to check this for position (2,3):
-        // Get variable number for position 2,3 in past variables
-        int linealIndex = coordToLineal(2, 3, treasureFutureOffset);
-        // Get the same variable, but in the past subset
-        int linealIndexPast = coordToLineal(2, 3, treasurePastOffset);
-
-        VecInt variablePositive = new VecInt();
-        variablePositive.insertFirst(linealIndex);
-
-        // Check if Gamma + variablePositive is unsatisfiable:
-        // This is only AN EXAMPLE for a specific position: (2,3)
-        if (!(solver.isSatisfiable(variablePositive))) {
-            // Add conclusion to list, but rewritten with respect to "past" variables
-            VecInt concPast = new VecInt();
-            concPast.insertFirst(-(linealIndexPast));
-
-            futureToPast.add(concPast);
-            tfstate.set(2, 3, "X");
+        futureToPast = new Vec<>();
+        for (Position pos: tfstate.getUnknownPosition()) {
+            assumptions.push(-coordToLineal(pos, treasureFutureOffset));
+            if (!(solver.isSatisfiable(assumptions))) {
+                // Add conclusion to list, but rewritten with respect to "past" variables
+                IVecInt concPast = new VecInt();
+                concPast.insertFirst(-coordToLineal(pos, treasureFutureOffset));
+                futureToPast.push(concPast);
+                tfstate.set(pos, "X");
+            }
+            assumptions.pop();  // Deletes the pos variable
         }
-
     }
 
     /**
@@ -526,12 +520,11 @@ public class TreasureFinder {
      *               lineal belongs to
      * @return array with x and y coordinates
      **/
-    public int[] linealToCoord(int lineal, int offset) {
+    public Position linealToCoord(int lineal, int offset) {
         lineal = lineal - offset + 1;
-        int[] coords = new int[2];
-        coords[1] = ((lineal - 1) % worldDim) + 1;
-        coords[0] = (lineal - 1) / worldDim + 1;
-        return coords;
+        int x = ((lineal - 1) % worldDim) + 1;
+        int y = (lineal - 1) / worldDim + 1;
+        return new Position(x, y);
     }
 
 

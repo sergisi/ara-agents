@@ -3,8 +3,7 @@ package apryraz.tworld;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 
 public class TFState {
     /**
@@ -13,10 +12,12 @@ public class TFState {
 
     int wDim;
     String[][] matrix;
+    HashSet<Position> unknown;
 
     public TFState(int dim) {
         wDim = dim;
         matrix = new String[wDim][wDim];
+        unknown = new HashSet<>();
         initializeState();
     }
 
@@ -24,6 +25,7 @@ public class TFState {
         for (int i = 0; i < wDim; i++) {
             for (int j = 0; j < wDim; j++) {
                 matrix[i][j] = "?";
+                unknown.add(new Position(i+1, j+1));
             }
         }
     }
@@ -32,8 +34,19 @@ public class TFState {
         return matrix[i - 1][j - 1];
     }
 
-    public void set(int i, int j, String val) {
-        matrix[i - 1][j - 1] = val;
+    public void set(Position pos, String val) {
+        if ("X".equals(val))
+            unknown.remove(pos);
+        matrix[pos.x -1][pos.y-1] = val;
+    }
+
+    @Override
+    public String toString() {
+        return "TFState{" +
+                "wDim=" + wDim +
+                ", matrix=" + Arrays.toString(matrix) +
+                ", unknown=" + unknown +
+                '}';
     }
 
     @Override
@@ -42,22 +55,15 @@ public class TFState {
         if (o == null || getClass() != o.getClass()) return false;
         TFState tfState = (TFState) o;
         return wDim == tfState.wDim &&
-                Arrays.deepEquals(matrix, tfState.matrix);
+                Arrays.equals(matrix, tfState.matrix) &&
+                Objects.equals(unknown, tfState.unknown);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(wDim);
+        int result = Objects.hash(wDim, unknown);
         result = 31 * result + Arrays.hashCode(matrix);
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return "TFState{" +
-                "wDim=" + wDim +
-                ", matrix=" + Arrays.toString(matrix) +
-                '}';
     }
 
     public void printState() {
@@ -80,9 +86,13 @@ public class TFState {
             row = br.readLine();
             rowvalues = row.split(" ");
             for (int j = 1; j <= wDim; j++) {
-                tfstate.set(i, j, rowvalues[j - 1]);
+                tfstate.set(new Position(i, j), rowvalues[j - 1]);
             }
         }
         return tfstate;
+    }
+
+    public HashSet<Position> getUnknownPosition() {
+        return null;
     }
 }

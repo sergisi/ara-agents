@@ -1,6 +1,5 @@
 package apryraz.tworld;
 
-import org.sat4j.core.Vec;
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.ContradictionException;
@@ -40,7 +39,7 @@ public class TreasureFinder {
      * Array of clauses that represent conclusiones obtained in the last
      * call to the inference function, but rewritten using the "past" variables
      **/
-    Vec<IVecInt> futureToPast = null;
+    ArrayList<IVecInt> futureToPast;
     /**
      * the current state of knowledge of the agent (what he knows about
      * every position of the world)
@@ -98,6 +97,7 @@ public class TreasureFinder {
         System.out.println("STARTING TREASURE FINDER AGENT...");
         tfstate = new TFState(worldDim);  // Initialize state (matrix) of knowledge with '?'
         tfstate.printState();
+        futureToPast = new ArrayList<>();
     }
 
     /**
@@ -257,10 +257,12 @@ public class TreasureFinder {
      *            It will a message with three fields: [0,1,2,3] x y
      **/
     public void processDetectorSensorAnswer(AMessage ans) {
-        int x = Integer.parseInt(ans.getComp(1));
-        int y = Integer.parseInt(ans.getComp(2));
-        int detects = Integer.parseInt(ans.getComp(0));
-        assumptions.push(coordToLineal(x, y, detectorOffsets[detects]));
+        if ("detected".equals(ans.getComp(0))) {
+            int x = Integer.parseInt(ans.getComp(1));
+            int y = Integer.parseInt(ans.getComp(2));
+            int detects = Integer.parseInt(ans.getComp(3));
+            assumptions.push(coordToLineal(x, y, detectorOffsets[detects]));
+        }
     }
 
 
@@ -281,6 +283,7 @@ public class TreasureFinder {
 
     /**
      * Processes a pirate answer
+     *
      * @param ans pirate answer. Should start with treasureis
      */
     public void processPirateAnswer(AMessage ans) {
@@ -303,7 +306,9 @@ public class TreasureFinder {
      **/
     public void addLastFutureClausesToPastClauses() throws
             ContradictionException {
-        solver.addAllClauses(this.futureToPast);
+        for (IVecInt clause: futureToPast) {
+            solver.addClause(clause);
+        }
     }
 
     /**
@@ -320,14 +325,14 @@ public class TreasureFinder {
      **/
     public void performInferenceQuestions() throws
             TimeoutException {
-        futureToPast = new Vec<>();
-        for (Position pos: tfstate.getUnknownPosition()) {
+        futureToPast = new ArrayList<>();
+        for (Position pos : tfstate.getUnknownPosition()) {
             assumptions.push(-coordToLineal(pos, treasureFutureOffset));
             if (!(solver.isSatisfiable(assumptions))) {
                 // Add conclusion to list, but rewritten with respect to "past" variables
                 IVecInt concPast = new VecInt();
                 concPast.insertFirst(-coordToLineal(pos, treasureFutureOffset));
-                futureToPast.push(concPast);
+                futureToPast.add(concPast);
                 tfstate.set(pos, "X");
             }
             assumptions.pop();  // Deletes the pos variable
@@ -361,6 +366,7 @@ public class TreasureFinder {
 
     /**
      * Adds pirate rules
+     *
      * @throws ContradictionException by solver
      */
     protected void addPirateRule() throws ContradictionException {
@@ -401,6 +407,7 @@ public class TreasureFinder {
 
     /**
      * Adds reletaed to two positions all the rules concerning detections
+     *
      * @param pos1 the first position, where the detector belogs
      * @param pos2 the second position, where is compared
      * @throws ContradictionException by solver.
@@ -430,6 +437,7 @@ public class TreasureFinder {
 
     /**
      * Adds the rule that at least a treasure is in the search
+     *
      * @throws ContradictionException some exception of the solver.
      */
     protected void addAtLeastOneTresureRule() throws ContradictionException {

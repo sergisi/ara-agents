@@ -2,6 +2,7 @@ package apryraz.tworld;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.sat4j.core.Vec;
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.ContradictionException;
@@ -61,12 +62,20 @@ public class MoreTreasureFinderTest {
 
     @Test
     void testProcessDetectorAnswer() {
-        fail();
+        tfinder.assumptions = new VecInt();
+        AMessage detected = new AMessage("detected", "2", "3", "2");
+        tfinder.processDetectorSensorAnswer(detected);
+        int[] expected = new int[] {tfinder.coordToLineal(new Position(2, 3), tfinder.detectorOffsets[2])};
+        assertEquals(new VecInt(expected), tfinder.assumptions);
     }
 
     @Test
     void testProcessPirateAnswer() {
-        fail();
+        tfinder.assumptions = new VecInt();
+        AMessage message = new AMessage("treasureis", "4", "4", "up");
+        tfinder.processPirateAnswer(message);
+        int[] expected = new int[] {tfinder.pirateOffset + 4 - 1, tfinder.upOffset};
+        assertEquals(new VecInt(expected), tfinder.assumptions);
     }
 
 }

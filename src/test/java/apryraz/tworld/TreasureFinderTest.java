@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.System.exit;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -36,7 +37,7 @@ public class TreasureFinderTest {
         //  the targetState after performing action runNextStep with bAgent
         tAgent.runNextStep();
         TFState currentState = tAgent.getState();
-        assertTrue(currentState.equals(targetState));
+        assertEquals(currentState, targetState);
     }
 
 

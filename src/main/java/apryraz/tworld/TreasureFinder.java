@@ -34,7 +34,7 @@ public class TreasureFinder {
     /**
      * index to the next movement to perform, and total number of movements
      **/
-    int idNextStep, numMovements;
+    int idNextStep;
     /**
      * Array of clauses that represent conclusiones obtained in the last
      * call to the inference function, but rewritten using the "past" variables
@@ -92,7 +92,6 @@ public class TreasureFinder {
         } catch (ContradictionException ex) { // deleted IOException (not happening)
             Logger.getLogger(TreasureFinder.class.getName()).log(Level.SEVERE, null, ex);
         }
-        numMovements = 0;
         idNextStep = 0;
         System.out.println("STARTING TREASURE FINDER AGENT...");
         tfstate = new TFState(worldDim);  // Initialize state (matrix) of knowledge with '?'
@@ -143,7 +142,6 @@ public class TreasureFinder {
             String[] coords = stepsList[i].split(",");
             listOfSteps.add(new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1])));
         }
-        numMovements = listOfSteps.size(); // Initialization of numMovements
         idNextStep = 0;
     }
 
@@ -188,9 +186,9 @@ public class TreasureFinder {
      **/
     public AMessage moveToNext() {
         Position nextPosition;
-        if (idNextStep < numMovements) {
+        if (idNextStep < listOfSteps.size()) {
             nextPosition = listOfSteps.get(idNextStep);
-            idNextStep = idNextStep + 1;
+            idNextStep++;
             return moveTo(nextPosition.x, nextPosition.y);
         } else {
             System.out.println("NO MORE steps to perform at agent!");
@@ -324,17 +322,22 @@ public class TreasureFinder {
      **/
     public void performInferenceQuestions() throws
             TimeoutException {
+        // TODO: Clean
         futureToPast = new ArrayList<>();
+        ArrayList<Position> positionsFound = new ArrayList<>();
         for (Position pos : tfstate.getUnknownPosition()) {
-            assumptions.push(-coordToLineal(pos, treasureFutureOffset));
+            assumptions.push(coordToLineal(pos, treasureFutureOffset));
             if (!(solver.isSatisfiable(assumptions))) {
                 // Add conclusion to list, but rewritten with respect to "past" variables
-                IVecInt concPast = new VecInt();
-                concPast.insertFirst(-coordToLineal(pos, treasureFutureOffset));
-                futureToPast.add(concPast);
-                tfstate.set(pos, "X");
+                positionsFound.add(pos);
             }
             assumptions.pop();  // Deletes the pos variable
+        }
+        for (Position pos: positionsFound) {
+            IVecInt concPast = new VecInt();
+            concPast.insertFirst(-coordToLineal(pos, treasureFutureOffset));
+            futureToPast.add(concPast);
+            tfstate.set(pos, "X");
         }
     }
 

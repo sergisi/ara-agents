@@ -65,7 +65,7 @@ public class MoreTreasureFinderTest {
         tfinder.assumptions = new VecInt();
         AMessage detected = new AMessage("detected", "2", "3", "2");
         tfinder.processDetectorSensorAnswer(detected);
-        int[] expected = new int[] {tfinder.coordToLineal(new Position(2, 3), tfinder.detectorOffsets[2])};
+        int[] expected = new int[]{tfinder.coordToLineal(new Position(2, 3), tfinder.detectorOffsets[2])};
         assertEquals(new VecInt(expected), tfinder.assumptions);
     }
 
@@ -74,14 +74,14 @@ public class MoreTreasureFinderTest {
         tfinder.assumptions = new VecInt();
         AMessage message = new AMessage("treasureis", "4", "4", "up");
         tfinder.processPirateAnswer(message);
-        int[] expected = new int[] {tfinder.pirateOffset + 4 - 1, tfinder.upOffset};
+        int[] expected = new int[]{tfinder.pirateOffset + 4 - 1, tfinder.upOffset};
         assertEquals(new VecInt(expected), tfinder.assumptions);
     }
 
     @Test
     void testInferenceIsOkay() throws TimeoutException, ContradictionException {
         ArrayList<Position> steps = new ArrayList<>();
-        steps.add(new Position(1,1));
+        steps.add(new Position(1, 1));
         tfinder.setListOfSteps(steps);
         tfinder.runNextStep();
         assertEquals("X", tfinder.tfstate.get(1, 1));

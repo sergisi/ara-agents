@@ -69,7 +69,7 @@ public class TFState {
         if (o == null || getClass() != o.getClass()) return false;
         TFState tfState = (TFState) o;
         return wDim == tfState.wDim &&
-                Arrays.equals(matrix, tfState.matrix) &&
+                Arrays.deepEquals(matrix, tfState.matrix) &&
                 Objects.equals(unknown, tfState.unknown);
     }
 

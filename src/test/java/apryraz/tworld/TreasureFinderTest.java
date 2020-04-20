@@ -33,13 +33,7 @@ public class TreasureFinderTest {
                                    TFState targetState) throws
             ContradictionException, TimeoutException {
         tAgent.runNextStep();
-
         TFState currentState = tAgent.getState();
-        System.out.println("Expected");
-        targetState.printState();
-        System.out.println("Actually");
-        currentState.printState();
-
         assertEquals(currentState, targetState);
     }
 
@@ -77,16 +71,14 @@ public class TreasureFinderTest {
      * @return returns an ArrayList of TFState with the resulting list of states
      **/
     ArrayList<TFState> loadListOfTargetStates(int wDim, int numStates, String statesFile) {
-        ArrayList<TFState> listOfStates = new ArrayList<TFState>(numStates);
+        ArrayList<TFState> listOfStates = new ArrayList<>(numStates);
         try {
             BufferedReader br = new BufferedReader(new FileReader(statesFile));
-            String row;
-
             // steps = br.readLine();
             for (int s = 0; s < numStates; s++) {
                 listOfStates.add(readTargetStateFromFile(br, wDim));
                 // Read a blank line between states
-                row = br.readLine();
+                br.readLine();
             }
             br.close();
         } catch (FileNotFoundException ex) {
@@ -111,12 +103,12 @@ public class TreasureFinderTest {
      * @param fileSteps   file name with sequence of steps to perform
      * @param fileStates  file name with sequence of target states, that should
      *                    be the resulting states after each movement in fileSteps
-     * @param filePirates
+     * @param filePirates file containing all the positions of the pirates
      **/
     public void testMakeSeqOfSteps(int wDim, int tX, int tY,
                                    int numSteps, String fileSteps, String fileStates,
                                    String filePirates)
-            throws IOException, ContradictionException, TimeoutException {
+            throws ContradictionException, TimeoutException {
         TreasureFinder finder = new TreasureFinder(wDim);
         TreasureWorldEnv worldEnv = new TreasureWorldEnv(wDim, tX, tY, filePirates);
         ArrayList<TFState> seqOfStates = loadListOfTargetStates(wDim, numSteps, fileStates);
@@ -134,10 +126,16 @@ public class TreasureFinderTest {
      **/
     @Test
     public void TWorldTest1() throws
-            IOException, ContradictionException, TimeoutException {
+            ContradictionException, TimeoutException {
         // Example test for 4x4 world , Treasure at 3,3 and 5 steps
         testMakeSeqOfSteps(4, 3, 3, 5, "tests/steps1.txt", "tests/states1.txt",
                 "tests/pirates1.txt");
+        testMakeSeqOfSteps(6, 4, 4, 5, "tests/steps2.txt", "tests/states2.txt",
+                "tests/pirates2.txt");
+        testMakeSeqOfSteps(7, 5, 4, 7, "tests/steps3.txt", "tests/states3.txt",
+                "tests/pirates3.txt");
+        testMakeSeqOfSteps(8, 3, 7, 6, "tests/steps4.txt", "tests/states4.txt",
+                "tests/pirates4.txt");
     }
 
 }

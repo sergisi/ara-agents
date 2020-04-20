@@ -81,11 +81,16 @@ public class MoreTreasureFinderTest {
     @Test
     void testInferenceIsOkay() throws TimeoutException, ContradictionException {
         ArrayList<Position> steps = new ArrayList<>();
+        steps.add(new Position(1, 1));
         steps.add(new Position(2, 1));
         tfinder.setListOfSteps(steps);
         tfinder.runNextStep();
         assertEquals("?", tfinder.tfstate.get(1, 3));
-        assertEquals("X", tfinder.tfstate.get(3, 1));
+        assertEquals("?", tfinder.tfstate.get(3, 1));
+        tfinder.runNextStep();
+        assertEquals("?", tfinder.tfstate.get(2, 3));
+        assertEquals("X", tfinder.tfstate.get(3, 2));
+
     }
 
     @Test

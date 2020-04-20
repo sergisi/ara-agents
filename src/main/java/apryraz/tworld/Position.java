@@ -37,6 +37,12 @@ public class Position {
         y = b;
     }
 
+    /**
+     * Gets the distance in square to another position
+     * @param p other position
+     * @return the distance (int) between two points. Distance is calculated as
+     * max(|x-p.x|, |y-p.y|)
+     */
     public int distanceOf(Position p) {
         return Integer.max(abs(x - p.x), abs(y - p.y));
     }

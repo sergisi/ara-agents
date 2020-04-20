@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.System.exit;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Class for testing the TreasureFinder agent
@@ -30,10 +31,10 @@ public class TreasureFinderTest {
      **/
     public void testMakeSimpleStep(TreasureFinder tAgent,
                                    TFState targetState) throws
-            IOException, ContradictionException, TimeoutException {
-        // Check (assert) whether the resulting state is equal to
-        //  the targetState after performing action runNextStep with bAgent
-
+            ContradictionException, TimeoutException {
+        tAgent.runNextStep();
+        TFState currentState = tAgent.getState();
+        assertEquals(currentState, targetState);
     }
 
 
@@ -54,7 +55,7 @@ public class TreasureFinderTest {
             row = br.readLine();
             rowvalues = row.split(" ");
             for (int j = 1; j <= wDim; j++) {
-                tfstate.set(i, j, rowvalues[j - 1]);
+                tfstate.set(new Position(i, j), rowvalues[j - 1]);
             }
         }
         return tfstate;
@@ -70,16 +71,14 @@ public class TreasureFinderTest {
      * @return returns an ArrayList of TFState with the resulting list of states
      **/
     ArrayList<TFState> loadListOfTargetStates(int wDim, int numStates, String statesFile) {
-        ArrayList<TFState> listOfStates = new ArrayList<TFState>(numStates);
+        ArrayList<TFState> listOfStates = new ArrayList<>(numStates);
         try {
             BufferedReader br = new BufferedReader(new FileReader(statesFile));
-            String row;
-
             // steps = br.readLine();
             for (int s = 0; s < numStates; s++) {
                 listOfStates.add(readTargetStateFromFile(br, wDim));
                 // Read a blank line between states
-                row = br.readLine();
+                br.readLine();
             }
             br.close();
         } catch (FileNotFoundException ex) {
@@ -104,26 +103,21 @@ public class TreasureFinderTest {
      * @param fileSteps   file name with sequence of steps to perform
      * @param fileStates  file name with sequence of target states, that should
      *                    be the resulting states after each movement in fileSteps
-     * @param filePirates
+     * @param filePirates file containing all the positions of the pirates
      **/
     public void testMakeSeqOfSteps(int wDim, int tX, int tY,
                                    int numSteps, String fileSteps, String fileStates,
                                    String filePirates)
-            throws IOException, ContradictionException, TimeoutException {
-        // You should make TreasureFinder and TreasureWorldEnv objects to  test.
-        // Then load sequence of target states, load sequence of steps into the bAgent
-        // and then test the sequence calling testMakeSimpleStep once for each step.
-        TreasureFinder TAgent;
-        // load information about the World into the EnvAgent
-        TreasureWorldEnv EnvAgent;
-        // Load list of states
-        ArrayList<TFState> seqOfStates;
+            throws ContradictionException, TimeoutException {
+        TreasureFinder finder = new TreasureFinder(wDim);
+        TreasureWorldEnv worldEnv = new TreasureWorldEnv(wDim, tX, tY, filePirates);
+        ArrayList<TFState> seqOfStates = loadListOfTargetStates(wDim, numSteps, fileStates);
 
-        // Set environment agent and load list of steps into the agent
-        TAgent.loadListOfSteps(numSteps, fileSteps);
-        TAgent.setEnvironment(EnvAgent);
-        // Test here the sequence of steps and check the resulting states with the
-        // ones in seqOfStates
+        finder.loadListOfSteps(numSteps, fileSteps);
+        finder.setEnvironment(worldEnv);
+        for (TFState state : seqOfStates) {
+            testMakeSimpleStep(finder, state);
+        }
     }
 
     /**
@@ -132,9 +126,16 @@ public class TreasureFinderTest {
      **/
     @Test
     public void TWorldTest1() throws
-            IOException, ContradictionException, TimeoutException {
+            ContradictionException, TimeoutException {
         // Example test for 4x4 world , Treasure at 3,3 and 5 steps
-        testMakeSeqOfSteps(4, 3, 3, 5, "tests/steps1.txt", "tests/states1.txt", "tests/pirates1.txt");
+        testMakeSeqOfSteps(4, 3, 3, 5, "tests/steps1.txt", "tests/states1.txt",
+                "tests/pirates1.txt");
+        testMakeSeqOfSteps(6, 4, 4, 5, "tests/steps2.txt", "tests/states2.txt",
+                "tests/pirates2.txt");
+        testMakeSeqOfSteps(7, 5, 4, 7, "tests/steps3.txt", "tests/states3.txt",
+                "tests/pirates3.txt");
+        testMakeSeqOfSteps(8, 3, 7, 6, "tests/steps4.txt", "tests/states4.txt",
+                "tests/pirates4.txt");
     }
 
 }

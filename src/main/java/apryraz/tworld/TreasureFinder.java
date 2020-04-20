@@ -1,14 +1,16 @@
-
-
 package apryraz.tworld;
 
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.ISolver;
+import org.sat4j.specs.IVecInt;
 import org.sat4j.specs.TimeoutException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,12 +34,12 @@ public class TreasureFinder {
     /**
      * index to the next movement to perform, and total number of movements
      **/
-    int idNextStep, numMovements;
+    int idNextStep;
     /**
      * Array of clauses that represent conclusiones obtained in the last
      * call to the inference function, but rewritten using the "past" variables
      **/
-    ArrayList<VecInt> futureToPast = null;
+    ArrayList<IVecInt> futureToPast;
     /**
      * the current state of knowledge of the agent (what he knows about
      * every position of the world)
@@ -46,7 +48,7 @@ public class TreasureFinder {
     /**
      * The object that represents the interface to the Treasure World
      **/
-    TreasureWorldEnv EnvAgent;
+    TreasureWorldEnv envAgent;
     /**
      * SAT solver object that stores the logical boolean formula with the rules
      * and current knowledge about not possible locations for Treasure
@@ -60,45 +62,41 @@ public class TreasureFinder {
     /**
      * Dimension of the world and total size of the world (Dim^2)
      **/
-    int WorldDim, WorldLinealDim;
+    int worldDim;
 
     /**
      * This set of variables CAN be use to mark the beginning of different sets
      * of variables in your propositional formula (but you may have more sets of
      * variables in your solution).
      **/
-    int TreasurePastOffset;
-    int TreasureFutureOffset;
-    int DetectorOffset;
-    int actualLiteral;
+    int treasurePastOffset;
+    int pirateOffset;
+    int upOffset;
+    int[] detectorOffsets = new int[4];
+    int treasureFutureOffset;
 
+    // Saves assumptions found at the current step
+    VecInt assumptions;
 
     /**
      * The class constructor must create the initial Boolean formula with the
      * rules of the Treasure World, initialize the variables for indicating
      * that we do not have yet any movements to perform, make the initial state.
      *
-     * @param WDim the dimension of the Treasure World
+     * @param wDim the dimension of the Treasure World
      **/
-    public TreasureFinder(int WDim) {
-
-        WorldDim = WDim;
-        WorldLinealDim = WorldDim * WorldDim;
-
+    public TreasureFinder(int wDim) {
+        worldDim = wDim;
         try {
             solver = buildGamma();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(TreasureFinder.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException | ContradictionException ex) {
+        } catch (ContradictionException ex) { // deleted IOException (not happening)
             Logger.getLogger(TreasureFinder.class.getName()).log(Level.SEVERE, null, ex);
         }
-        numMovements = 0;
         idNextStep = 0;
         System.out.println("STARTING TREASURE FINDER AGENT...");
-
-
-        tfstate = new TFState(WorldDim);  // Initialize state (matrix) of knowledge with '?'
+        tfstate = new TFState(worldDim);  // Initialize state (matrix) of knowledge with '?'
         tfstate.printState();
+        futureToPast = new ArrayList<>();
     }
 
     /**
@@ -110,8 +108,7 @@ public class TreasureFinder {
      * @param environment the Environment object
      **/
     public void setEnvironment(TreasureWorldEnv environment) {
-
-        EnvAgent = environment;
+        envAgent = environment;
     }
 
 
@@ -140,12 +137,11 @@ public class TreasureFinder {
             exit(2);
         }
         stepsList = steps.split(" ");
-        listOfSteps = new ArrayList<Position>(numSteps);
+        listOfSteps = new ArrayList<>(numSteps);
         for (int i = 0; i < numSteps; i++) {
             String[] coords = stepsList[i].split(",");
             listOfSteps.add(new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1])));
         }
-        numMovements = listOfSteps.size(); // Initialization of numMovements
         idNextStep = 0;
     }
 
@@ -166,29 +162,17 @@ public class TreasureFinder {
      * result of the logical inferences performed by the agent with its formula.
      **/
     public void runNextStep() throws
-            IOException, ContradictionException, TimeoutException {
+            ContradictionException, TimeoutException {
         pirateFound = 0;
-        // Add the conclusions obtained in the previous step
-        // but as clauses that use the "past" variables
         addLastFutureClausesToPastClauses();
-
-        // Ask to move, and check whether it was successful
-        // Also, record if a pirate was found at that position
+        this.assumptions = new VecInt();
         processMoveAnswer(moveToNext());
-
-
-        // Next, use Detector sensor to discover new information
         processDetectorSensorAnswer(DetectsAt());
-        // If a pirate was found at new agent position, ask question to
-        // pirate and process Answer to discover new information
         if (pirateFound == 1) {
             processPirateAnswer(IsTreasureUpOrDown());
         }
-
-        // Perform logical consequence questions for all the positions
-        // of the Treasure World
         performInferenceQuestions();
-        tfstate.printState();      // Print the resulting knowledge matrix
+        tfstate.printState();  // Print the resulting knowledge matrix
     }
 
 
@@ -202,10 +186,9 @@ public class TreasureFinder {
      **/
     public AMessage moveToNext() {
         Position nextPosition;
-
-        if (idNextStep < numMovements) {
+        if (idNextStep < listOfSteps.size()) {
             nextPosition = listOfSteps.get(idNextStep);
-            idNextStep = idNextStep + 1;
+            idNextStep++;
             return moveTo(nextPosition.x, nextPosition.y);
         } else {
             System.out.println("NO MORE steps to perform at agent!");
@@ -225,13 +208,10 @@ public class TreasureFinder {
      * moveto message sent
      **/
     public AMessage moveTo(int x, int y) {
-        // Tell the EnvironmentAgentID that we want  to move
         AMessage msg, ans;
-
-        msg = new AMessage("moveto", (new Integer(x)).toString(), (new Integer(y)).toString(), "");
-        ans = EnvAgent.acceptMessage(msg);
+        msg = new AMessage("moveto", (Integer.valueOf(x)).toString(), (Integer.valueOf(y)).toString(), "");
+        ans = envAgent.acceptMessage(msg);
         System.out.println("FINDER => moving to : (" + x + "," + y + ")");
-
         return ans;
     }
 
@@ -258,10 +238,9 @@ public class TreasureFinder {
      **/
     public AMessage DetectsAt() {
         AMessage msg, ans;
-
-        msg = new AMessage("detectsat", (new Integer(agentX)).toString(),
-                (new Integer(agentY)).toString(), "");
-        ans = EnvAgent.acceptMessage(msg);
+        msg = new AMessage("detectsat", (Integer.valueOf(agentX)).toString(),
+                (Integer.valueOf(agentY)).toString(), "");
+        ans = envAgent.acceptMessage(msg);
         System.out.println("FINDER => detecting at : (" + agentX + "," + agentY + ")");
         return ans;
     }
@@ -274,18 +253,13 @@ public class TreasureFinder {
      * @param ans message obtained to the query "Detects at (x,y)?".
      *            It will a message with three fields: [0,1,2,3] x y
      **/
-    public void processDetectorSensorAnswer(AMessage ans) throws
-            IOException, ContradictionException, TimeoutException {
-
-        int x = Integer.parseInt(ans.getComp(1));
-        int y = Integer.parseInt(ans.getComp(2));
-        String detects = ans.getComp(0);
-
-        // Call your function/functions to add the evidence clauses
-        // to Gamma to then be able to infer new NOT possible positions
-
-
-        // CALL your functions HERE
+    public void processDetectorSensorAnswer(AMessage ans) {
+        if ("detected".equals(ans.getComp(0))) {
+            int x = Integer.parseInt(ans.getComp(1));
+            int y = Integer.parseInt(ans.getComp(2));
+            int detects = Integer.parseInt(ans.getComp(3));
+            assumptions.push(coordToLineal(x, y, detectorOffsets[detects]));
+        }
     }
 
 
@@ -297,28 +271,28 @@ public class TreasureFinder {
      **/
     public AMessage IsTreasureUpOrDown() {
         AMessage msg, ans;
-
-        msg = new AMessage("treasureup", (new Integer(agentX)).toString(),
-                (new Integer(agentY)).toString(), "");
-        ans = EnvAgent.acceptMessage(msg);
+        msg = new AMessage("treasureup", (Integer.valueOf(agentX)).toString(),
+                (Integer.valueOf(agentY)).toString(), "");
+        ans = envAgent.acceptMessage(msg);
         System.out.println("FINDER => checking treasure up of : (" + agentX + "," + agentY + ")");
         return ans;
     }
 
-    // TODO: made void because there was no type returning
-    public void processPirateAnswer(AMessage ans) throws
-            IOException, ContradictionException, TimeoutException {
-
+    /**
+     * Processes a pirate answer
+     *
+     * @param ans pirate answer. Should start with treasureis
+     */
+    public void processPirateAnswer(AMessage ans) {
         int y = Integer.parseInt(ans.getComp(2));
-        String isup = ans.getComp(0);
-        // isup should be either "yes" (is up of agent position), or "no"
-
-        // Call your function/functions to add the evidence clauses
-        // to Gamma to then be able to infer new NOT possible positions
-
-
-        // CALL your functions HERE to update the solver object with more
-        // clauses
+        String isUp = ans.getComp(0);
+        if ("treasureis".equals(ans.getComp(0))) {
+            // treasureis x y up|down
+            assumptions.push(pirateOffset - 1 + Integer.parseInt(ans.getComp(2))); // Existeix pirata y
+            assumptions.push(("up".equals(ans.getComp(3))) ? upOffset : -upOffset);
+        } else {
+            System.out.println("THIS SHOULDN'T HAPPEN: PIRATE IS NOT CONSISTENT");
+        }
     }
 
 
@@ -327,10 +301,11 @@ public class TreasureFinder {
      * futureToPast to the formula stored in solver.
      * Use the function addClause( VecInt ) to add each clause to the solver
      **/
-    public void addLastFutureClausesToPastClauses() throws IOException,
-            ContradictionException, TimeoutException {
-
-
+    public void addLastFutureClausesToPastClauses() throws
+            ContradictionException {
+        for (IVecInt clause: futureToPast) {
+            solver.addClause(clause);
+        }
     }
 
     /**
@@ -345,28 +320,25 @@ public class TreasureFinder {
      * conclusions that were already added in previous steps, although this will not produce
      * any bad functioning in the reasoning process with the formula.
      **/
-    public void performInferenceQuestions() throws IOException,
-            ContradictionException, TimeoutException {
-        // EXAMPLE code to check this for position (2,3):
-        // Get variable number for position 2,3 in past variables
-        int linealIndex = coordToLineal(2, 3, TreasureFutureOffset);
-        // Get the same variable, but in the past subset
-        int linealIndexPast = coordToLineal(2, 3, TreasurePastOffset);
-
-        VecInt variablePositive = new VecInt();
-        variablePositive.insertFirst(linealIndex);
-
-        // Check if Gamma + variablePositive is unsatisfiable:
-        // This is only AN EXAMPLE for a specific position: (2,3)
-        if (!(solver.isSatisfiable(variablePositive))) {
-            // Add conclusion to list, but rewritten with respect to "past" variables
-            VecInt concPast = new VecInt();
-            concPast.insertFirst(-(linealIndexPast));
-
-            futureToPast.add(concPast);
-            tfstate.set(2, 3, "X");
+    public void performInferenceQuestions() throws
+            TimeoutException {
+        // TODO: Clean
+        futureToPast = new ArrayList<>();
+        ArrayList<Position> positionsFound = new ArrayList<>();
+        for (Position pos : tfstate.getUnknownPosition()) {
+            assumptions.push(coordToLineal(pos, treasureFutureOffset));
+            if (!(solver.isSatisfiable(assumptions))) {
+                // Add conclusion to list, but rewritten with respect to "past" variables
+                positionsFound.add(pos);
+            }
+            assumptions.pop();  // Deletes the pos variable
         }
-
+        for (Position pos: positionsFound) {
+            IVecInt concPast = new VecInt();
+            concPast.insertFirst(-coordToLineal(pos, treasureFutureOffset));
+            futureToPast.add(concPast);
+            tfstate.set(pos, "X");
+        }
     }
 
     /**
@@ -375,24 +347,120 @@ public class TreasureFinder {
      *
      * @return returns the solver object where the formula has been stored
      **/
-    public ISolver buildGamma() throws UnsupportedEncodingException,
-            FileNotFoundException, IOException, ContradictionException {
-        int totalNumVariables;
+    public ISolver buildGamma() throws
+            ContradictionException {
+        createSolver();
+        addAtLeastOneTresureRule();
+        addDetectorRule();
+        addPirateRule();
+        return solver;
+    }
 
-        // You must set this variable to the total number of boolean variables
-        // in your formula Gamma
-        // totalNumVariables =  ??
+    /**
+     * Initializes solver instance. It also initialitzates offset instances.
+     */
+    protected void createSolver() {
+        int totalNumVariables = getTotalNumVariables();
         solver = SolverFactory.newDefault();
         solver.setTimeout(3600);
         solver.newVar(totalNumVariables);
-        // This variable is used to generate, in a particular sequential order,
-        // the variable indentifiers of all the variables
-        actualLiteral = 1;
+    }
 
-        // call here functions to add the differen sets of clauses
-        // of Gamma to the solver object
+    /**
+     * Adds pirate rules
+     *
+     * @throws ContradictionException by solver
+     */
+    protected void addPirateRule() throws ContradictionException {
+        for (int pirate = 0; pirate < worldDim; pirate++) {
+            for (int i = 1; i <= worldDim; i++) {
+                for (int j = 1; j <= worldDim; j++) {
+                    int[] clause = new int[3];
+                    clause[0] = -(pirate + pirateOffset);
+                    if (pirate + 1 <= j) {
+                        clause[1] = upOffset;
+                    } else {
+                        clause[1] = -upOffset;
+                    }
+                    clause[2] = coordToLineal(i, j, treasureFutureOffset);
+                    solver.addClause(new VecInt(clause));
+                }
+            }
+        }
+    }
 
-        return solver;
+    /**
+     * Adds all rules of detector without the rule specified
+     * at addDetectorReturned1Rule
+     */
+    protected void addDetectorRule() throws ContradictionException {
+        for (int i1 = 1; i1 <= worldDim; i1++) {
+            for (int j1 = 1; j1 <= worldDim; j1++) {
+                Position pos1 = new Position(i1, j1);
+                for (int i2 = 1; i2 <= worldDim; i2++) {
+                    for (int j2 = 1; j2 <= worldDim; j2++) {
+                        Position pos2 = new Position(i2, j2);
+                        addDetectorRulePosition(pos1, pos2);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds reletaed to two positions all the rules concerning detections
+     *
+     * @param pos1 the first position, where the detector belongs
+     * @param pos2 the second position, where is compared
+     * @throws ContradictionException by solver.
+     */
+    protected void addDetectorRulePosition(Position pos1, Position pos2) throws ContradictionException {
+        int distance = pos1.distanceOf(pos2);
+        if (distance < 3) {
+            ruleOffset(pos1, pos2, 0);
+        }
+        if (distance != 0) {
+            ruleOffset(pos1, pos2, 1);
+        }
+        if (distance != 1) {
+            ruleOffset(pos1, pos2, 2);
+        }
+        if (distance != 2) {
+            ruleOffset(pos1, pos2, 3);
+        }
+    }
+
+    private void ruleOffset(Position pos1, Position pos2, int detector) throws ContradictionException {
+        int[] clause = new int[2];
+        clause[0] = -coordToLineal(pos1, detectorOffsets[detector]);
+        clause[1] = -coordToLineal(pos2, treasureFutureOffset);
+        solver.addClause(new VecInt(clause));
+    }
+
+    /**
+     * Adds the rule that at least a treasure is in the search
+     *
+     * @throws ContradictionException some exception of the solver.
+     */
+    protected void addAtLeastOneTresureRule() throws ContradictionException {
+        int[] constr = new int[pirateOffset - treasurePastOffset];
+        for (int i = treasurePastOffset; i < pirateOffset; i++) {
+            constr[i] = i + 1;  // clause with 1 2 3 4 ... pirateOffset 0
+        }
+        solver.addClause(new VecInt(constr));
+    }
+
+    private int getTotalNumVariables() {
+        // initializate offset instances
+        treasurePastOffset = 0;
+        pirateOffset = worldDim * worldDim;
+        upOffset = pirateOffset + worldDim;
+        detectorOffsets[0] = upOffset + 1;
+        for (int i = 0; i < 3; i++) {
+            detectorOffsets[i + 1] = detectorOffsets[i] + pirateOffset; //Pirate offset is n^2
+        }
+        treasureFutureOffset = detectorOffsets[3] + pirateOffset;
+        return treasureFutureOffset + pirateOffset;
     }
 
 
@@ -410,7 +478,23 @@ public class TreasureFinder {
      * @return the integer indentifer of the variable  b_[x,y] in the formula
      **/
     public int coordToLineal(int x, int y, int offset) {
-        return ((x - 1) * WorldDim) + (y - 1) + offset;
+        return ((x - 1) * worldDim) + (y - 1) + offset;
+    }
+
+    /**
+     * Convert a coordinate pair (x,y) to the integer value  t_[x,y]
+     * of variable that stores that information in the formula, using
+     * offset as the initial index for that subset of position variables
+     * (past and future position variables have different variables, so different
+     * offset values)
+     *
+     * @param pos    postion coordinate
+     * @param offset initial value for the subset of position variables
+     *               (past or future subset)
+     * @return the integer indentifer of the variable  b_[x,y] in the formula
+     **/
+    public int coordToLineal(Position pos, int offset) {
+        return coordToLineal(pos.x, pos.y, offset);
     }
 
     /**
@@ -423,13 +507,14 @@ public class TreasureFinder {
      *               lineal belongs to
      * @return array with x and y coordinates
      **/
-    public int[] linealToCoord(int lineal, int offset) {
+    public Position linealToCoord(int lineal, int offset) {
         lineal = lineal - offset + 1;
-        int[] coords = new int[2];
-        coords[1] = ((lineal - 1) % WorldDim) + 1;
-        coords[0] = (lineal - 1) / WorldDim + 1;
-        return coords;
+        int x = (lineal - 1) / worldDim + 1;
+        int y = ((lineal - 1) % worldDim) + 1;
+        return new Position(x, y);
     }
 
-
+    public void setListOfSteps(ArrayList<Position> listOfSteps) {
+        this.listOfSteps = listOfSteps;
+    }
 }

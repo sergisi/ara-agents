@@ -1,5 +1,7 @@
 package apryraz.tworld;
 
+import java.util.Arrays;
+
 /**
  * Class for representing messages exchanged between agents and the
  * World interface object
@@ -10,7 +12,8 @@ public class AMessage {
      *  So far, we assume a fixed pattern, with always three fields in any message:
      *  field0:  message type: moveto, movedto, notmovedto, detects at, yes/no ...
      *  field1:  first parameter of message
-     *  field2:  second parameter of message
+     *  field2: second parameter of message
+     *  field3:  third parameter of message
      */
     String[] msg;
 
@@ -48,4 +51,23 @@ public class AMessage {
         return msg[c];
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AMessage aMessage = (AMessage) o;
+        return Arrays.equals(msg, aMessage.msg);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(msg);
+    }
+
+    @Override
+    public String toString() {
+        return "AMessage{" +
+                "msg=" + Arrays.toString(msg) +
+                '}';
+    }
 }

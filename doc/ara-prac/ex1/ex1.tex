@@ -1,0 +1,47 @@
+\begin{document}
+En el problema 1 es defineixen les variables com:
+\[
+Vars = \{tr_{i, j}^{t-1}, p_j^t, u^t, d_{i, j, k}^t, tr_{i, j}^{t-1}\}
+\]
+El nombre de variables és:
+\[
+f(n) = n^2 + n + 1 + 4n^2 + n^2
+\]
+\begin{enumerate}
+	\item $t^{t-1}$, i $t^{t+1}$ com l'agent te informació en el passat o en el futur.
+	\item $i^t$ hi ha un informant.
+	\item $e^t$ hi ha un espia preguntant per la informació.
+	\item $p^{t+1}$, i $p^{t-1}$ la contrasenya donada per l'espia es correcta.
+\end{enumerate}
+Llavors, la fórmula $\Gamma$ es defineix com les següents normes:
+\begin{gather}
+\bigcup(tr_{i, j}^{t-1})\\
+d_{i, j, 0}^t \rightarrow \neg tr_{i', j'}, t.q. max(|i - i'|, |j - j'|) < 3\\
+d_{i, j, 1}^t \rightarrow \neg tr_{i', j'}, t.q. i \neq i' \cup j \neq j'\\
+d_{i, j, 2}^t \rightarrow \neg tr_{i', j'}, t.q. max(|i - i'|, |j - j'|) \neq 1\\
+d_{i, j, 3}^t \rightarrow \neg tr_{i', j'}, t.q. max(|i - i'|, |j - j'|) \neq 2\\
+p_j^t \wedge u^t \rightarrow \neg tr_{i, j'}^{t+1}, t.q. j' \leq j\\
+p_j^t \wedge \neg u^t \rightarrow \neg tr_{i, j'}^{t+1}, t.q. j' > j
+\end{gather}
+Les variables en $t + 1$ actualitzen els valors que existeixen en $t-1$, es a dir, si 
+en $t+1$ existeix el valor $t^{t+1}$, llavors en el següent pas segur que existirà $t^{t-1}$.\\
+%o o o o o
+%o o o o o
+%x x x o o
+%y x o o o
+%x o o o o
+
+Un mockito del Solver que ens xivi les clàusules.
+Per a fer el Gamma simplement mirarem que el nombre de clàusules sigui
+el correcte. Nombre de clàusules per a $wDim = 5$.
+\begin{gather}
+	1 
+	+ (4*9 + 8*12 +4*16 + 4*15 + 4*20 + 1*25) 
+	+ 25(25 - 1) +\\
+	(4 * (25 - 3) + 8*(25-5) + 4*(25-5)+ (4+4+1)(25-8))\\
+	+ (4 * (25 - 5) + 8*(25 - 6) + 4*(25-9)+4*(25 -7) + 4*(25-11)+1*(25 - 16))\\
+	+ (25 + 20 + 15 + 10 + 5)\\
+	+ (0 + 5 + 10 + 15 + 20)
+	= 1811
+\end{gather}
+\end{document}

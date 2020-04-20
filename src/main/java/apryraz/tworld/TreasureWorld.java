@@ -20,28 +20,25 @@ public class TreasureWorld {
      * runNextStep() of the BarcenasFinder agent.
      *
      * @param wDim        the dimension of world
-     * @param tX          x coordinate of Barcenas position
-     * @param tY          y coordinate of Barcenas position
+     * @param tx          x coordinate of Barcenas position
+     * @param ty          y coordinate of Barcenas position
      * @param numSteps    num of steps to perform
      * @param fileSteps   file name with sequence of steps to perform
      * @param filePirates file name with sequence of steps to perform
      **/
-    public static void runStepsSequence(int wDim, int tX, int tY,
+    public static void runStepsSequence(int wDim, int tx, int ty,
                                         int numSteps, String fileSteps, String filePirates) throws
-            IOException, ContradictionException, TimeoutException {
+            ContradictionException, TimeoutException {
         // Make instances of TreasureFinder agent and environment object classes
-        TreasureFinder TAgent;
-        TreasureWorldEnv EnvAgent;
+        TreasureFinder finder = new TreasureFinder(wDim);
+        TreasureWorldEnv worldEnv = new TreasureWorldEnv(wDim, tx, ty, filePirates);
 
+        finder.setEnvironment(worldEnv);
+        finder.loadListOfSteps(numSteps, fileSteps);
 
-        // Set environment object, and load list of pirate positions
-
-
-        // load list of steps into the Finder Agent
-
-
-        // Execute sequence of steps with the Agent
-
+        for (int i = 0; i < numSteps; i++) {
+            finder.runNextStep();
+        }
     }
 
     /**
@@ -53,12 +50,16 @@ public class TreasureWorld {
      * arg[4] = file name with sequence of steps to perform
      * arg[5] = file name with list of pirate positions
      **/
-    public static void main(String[] args) throws ParseFormatException,
-            IOException, ContradictionException, TimeoutException {
-
+    public static void main(String[] args) throws
+            ContradictionException, TimeoutException {
+        if (args.length != 6) {
+            System.out.println("ERROR: Number of arguments is not correct!");
+            System.exit(1);
+        }
         // Here I run a concrete example, but you should read parameters from
         // the command line, as decribed above.
-        runStepsSequence(4, 3, 3, 5, "tests/steps1.txt", "tests/pirates1.txt");
+        runStepsSequence(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]),
+                Integer.parseInt(args[3]), args[4], args[5]);
     }
 
 }

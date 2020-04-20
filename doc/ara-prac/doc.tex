@@ -1,0 +1,71 @@
+% !TeX spellcheck = ca
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{ amssymb }
+\usepackage{tikz}
+\usepackage{float}
+\usepackage{subfiles}
+\usepackage{listings}
+
+\graphicspath{ {img/} }
+
+\usetikzlibrary{positioning,fit,calc,arrows.meta, shapes, decorations}
+%Tot això hauria d'anar en un pkg, però no sé com és fa
+\newcommand*{\assignatura}[1]{\gdef\1assignatura{#1}}
+\newcommand*{\grup}[1]{\gdef\3grup{#1}}
+\newcommand*{\professorat}[1]{\gdef\4professorat{#1}}
+\renewcommand{\title}[1]{\gdef\5title{#1}}
+\renewcommand{\author}[1]{\gdef\6author{#1}}
+\renewcommand{\date}[1]{\gdef\7date{#1}}
+\renewcommand{\baselinestretch}{1.5}
+\renewcommand{\maketitle}{ %fa el maketitle de nou
+	\begin{titlepage}
+		\raggedright{UNIVERSITAT DE LLEIDA \\
+			Escola Politècnica Superior \\
+			Grau en Enginyeria Informàtica\\
+			\1assignatura\\}
+		\vspace{5cm}
+		\centering\huge{\5title \\}
+		\vspace{3cm}
+		\large{\6author} \\
+		\normalsize{\3grup}
+		\vfill
+		Professorat : \4professorat \\
+		Data : \7date
+\end{titlepage}}
+%Emplenar a partir d'aquí per a fer el títol : no se com es fa el package
+%S'han de renombrar totes, inclús date, si un camp es deixa en blanc no apareix
+
+
+	%Style of nodes. Si poses aquí un estil es pot reutilitzar més facilment
+
+\title{ARA: spy}
+\author{Sergi Simón Balcells\\21040111X}
+\date{Dimecres 1 d'abril}
+\assignatura{ARA}
+\professorat{R. Bejar}
+\grup{PraLab2}
+
+\renewcommand{\refname}{Bibliografia}
+
+%Comença el document
+\begin{document}
+	\maketitle
+	\thispagestyle{empty}
+	
+	\newpage
+	\pagenumbering{roman}
+	\tableofcontents
+	\newpage
+	\pagenumbering{arabic}
+	\section{Exercici 1}
+	\subfile{ex1/ex1.tex}
+	\section{Exercici 2}
+	\subfile{ex2/ex2.tex}
+	\section{Exercici 3}
+	\subfile{ex3/ex3.tex}
+
+
+\end{document}
+

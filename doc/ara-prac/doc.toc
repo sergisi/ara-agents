@@ -1,3 +1,2 @@
-\contentsline {section}{\numberline {1}Exercici 1}{1}% 
-\contentsline {section}{\numberline {2}Exercici 2}{2}% 
-\contentsline {section}{\numberline {3}Exercici 3}{2}% 
+\contentsline {section}{\numberline {1}Explicaci\IeC {\'o} de la formula}{1}
+\contentsline {section}{\numberline {2}Canvis en el diseny}{2}

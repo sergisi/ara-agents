@@ -53,7 +53,7 @@ public class TreasureWorld {
     public static void main(String[] args) throws
             ContradictionException, TimeoutException {
         if (args.length != 6) {
-            System.out.println("ERROR: Number of arguments is not correct!");
+            System.out.println("ERROR: Number of arguments is not correct: " + args.length);
             System.exit(1);
         }
         // Here I run a concrete example, but you should read parameters from

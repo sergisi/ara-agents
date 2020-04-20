@@ -222,6 +222,7 @@ public class TreasureFinder {
      * @param moveans the answer given by the environment to the last move message
      **/
     public void processMoveAnswer(AMessage moveans) {
+        moveans.showMessage();
         if (moveans.getComp(0).equals("movedto")) {
             agentX = Integer.parseInt(moveans.getComp(1));
             agentY = Integer.parseInt(moveans.getComp(2));
@@ -254,6 +255,7 @@ public class TreasureFinder {
      *            It will a message with three fields: [0,1,2,3] x y
      **/
     public void processDetectorSensorAnswer(AMessage ans) {
+        ans.showMessage();
         if ("detected".equals(ans.getComp(0))) {
             int x = Integer.parseInt(ans.getComp(1));
             int y = Integer.parseInt(ans.getComp(2));
@@ -284,6 +286,7 @@ public class TreasureFinder {
      * @param ans pirate answer. Should start with treasureis
      */
     public void processPirateAnswer(AMessage ans) {
+        ans.showMessage();
         int y = Integer.parseInt(ans.getComp(2));
         String isUp = ans.getComp(0);
         if ("treasureis".equals(ans.getComp(0))) {
@@ -303,7 +306,7 @@ public class TreasureFinder {
      **/
     public void addLastFutureClausesToPastClauses() throws
             ContradictionException {
-        for (IVecInt clause: futureToPast) {
+        for (IVecInt clause : futureToPast) {
             solver.addClause(clause);
         }
     }
@@ -333,7 +336,7 @@ public class TreasureFinder {
             }
             assumptions.pop();  // Deletes the pos variable
         }
-        for (Position pos: positionsFound) {
+        for (Position pos : positionsFound) {
             IVecInt concPast = new VecInt();
             concPast.insertFirst(-coordToLineal(pos, treasureFutureOffset));
             futureToPast.add(concPast);
@@ -377,12 +380,15 @@ public class TreasureFinder {
                 for (int j = 1; j <= worldDim; j++) {
                     int[] clause = new int[3];
                     clause[0] = -(pirate + pirateOffset);
-                    if (pirate + 1 <= j) {
-                        clause[1] = upOffset;
-                    } else {
-                        clause[1] = -upOffset;
+                    if (pirate + pirateOffset == 144) {
+                        System.out.println('a');
                     }
-                    clause[2] = coordToLineal(i, j, treasureFutureOffset);
+                    if (j <= pirate + 1) {
+                        clause[1] = -upOffset;
+                    } else {
+                        clause[1] = upOffset;
+                    }
+                    clause[2] = -coordToLineal(i, j, treasureFutureOffset);
                     solver.addClause(new VecInt(clause));
                 }
             }
@@ -444,23 +450,24 @@ public class TreasureFinder {
      */
     protected void addAtLeastOneTresureRule() throws ContradictionException {
         int[] constr = new int[pirateOffset - treasurePastOffset];
-        for (int i = treasurePastOffset; i < pirateOffset; i++) {
-            constr[i] = i + 1;  // clause with 1 2 3 4 ... pirateOffset 0
+        for (int i = 0; i < worldDim * worldDim; i++) {
+            constr[i] = i + treasurePastOffset;  // clause with 1 2 3 4 ... pirateOffset 0
         }
         solver.addClause(new VecInt(constr));
     }
 
     private int getTotalNumVariables() {
         // initializate offset instances
-        treasurePastOffset = 0;
-        pirateOffset = worldDim * worldDim;
+        int worldLinealDim = worldDim * worldDim;
+        treasurePastOffset = 1;
+        pirateOffset = worldLinealDim + treasurePastOffset;
         upOffset = pirateOffset + worldDim;
         detectorOffsets[0] = upOffset + 1;
         for (int i = 0; i < 3; i++) {
-            detectorOffsets[i + 1] = detectorOffsets[i] + pirateOffset; //Pirate offset is n^2
+            detectorOffsets[i + 1] = detectorOffsets[i] + worldLinealDim;
         }
-        treasureFutureOffset = detectorOffsets[3] + pirateOffset;
-        return treasureFutureOffset + pirateOffset;
+        treasureFutureOffset = detectorOffsets[3] + worldLinealDim;
+        return treasureFutureOffset + worldLinealDim;
     }
 
 

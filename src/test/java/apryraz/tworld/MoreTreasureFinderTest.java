@@ -8,8 +8,7 @@ import org.sat4j.specs.TimeoutException;
 
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MoreTreasureFinderTest {
 
@@ -17,25 +16,25 @@ public class MoreTreasureFinderTest {
 
     @BeforeEach
     void setUp() {
-        TreasureWorldEnv envAgent = new TreasureWorldEnv(4, 3, 3, "tests/pirates1.txt");
+        TreasureWorldEnv envAgent = new TreasureWorldEnv(4, 3, 3, "tests/pirates2.txt");
         tfinder.setEnvironment(envAgent);
     }
 
     @Test
     void testNumberOfVars() {
-        assertEquals(156, tfinder.solver.nVars());
+        assertEquals(157, tfinder.solver.nVars());
     }
 
     @Test
     void testOffsets() {
-        assertEquals(0, tfinder.treasurePastOffset);
-        assertEquals(25, tfinder.pirateOffset);
-        assertEquals(30, tfinder.upOffset);
-        assertEquals(31, tfinder.detectorOffsets[0]);
-        assertEquals(56, tfinder.detectorOffsets[1]);
-        assertEquals(81, tfinder.detectorOffsets[2]);
-        assertEquals(106, tfinder.detectorOffsets[3]);
-        assertEquals(131, tfinder.treasureFutureOffset);
+        assertEquals(1, tfinder.treasurePastOffset);
+        assertEquals(26, tfinder.pirateOffset);
+        assertEquals(31, tfinder.upOffset);
+        assertEquals(32, tfinder.detectorOffsets[0]);
+        assertEquals(57, tfinder.detectorOffsets[1]);
+        assertEquals(82, tfinder.detectorOffsets[2]);
+        assertEquals(107, tfinder.detectorOffsets[3]);
+        assertEquals(132, tfinder.treasureFutureOffset);
     }
 
     @Test
@@ -72,9 +71,9 @@ public class MoreTreasureFinderTest {
     @Test
     void testProcessPirateAnswer() {
         tfinder.assumptions = new VecInt();
-        AMessage message = new AMessage("treasureis", "4", "4", "up");
+        AMessage message = new AMessage("treasureis", "1", "3", "down");
         tfinder.processPirateAnswer(message);
-        int[] expected = new int[]{tfinder.pirateOffset + 4 - 1, tfinder.upOffset};
+        int[] expected = new int[]{tfinder.pirateOffset + 3 - 1, -tfinder.upOffset};
         assertEquals(new VecInt(expected), tfinder.assumptions);
     }
 
@@ -85,12 +84,31 @@ public class MoreTreasureFinderTest {
         steps.add(new Position(2, 1));
         tfinder.setListOfSteps(steps);
         tfinder.runNextStep();
-        assertEquals("?", tfinder.tfstate.get(1, 3));
-        assertEquals("?", tfinder.tfstate.get(3, 1));
+        assertEquals("?", tfinder.tfstate.get(new Position(1, 3)));
+        assertEquals("?", tfinder.tfstate.get(new Position(3, 1)));
         tfinder.runNextStep();
-        assertEquals("?", tfinder.tfstate.get(2, 3));
-        assertEquals("X", tfinder.tfstate.get(3, 2));
+        assertEquals("?", tfinder.tfstate.get(new Position(2, 3)));
+        assertEquals("X", tfinder.tfstate.get(new Position(3, 2)));
+    }
 
+    @Test
+    void testPirateInferenceIsOkay() throws TimeoutException, ContradictionException {
+        ArrayList<Position> steps = new ArrayList<>();
+        steps.add(new Position(1, 3));
+        tfinder.setListOfSteps(steps);
+        tfinder.runNextStep();
+        assertEquals(new VecInt(new int[]{109, tfinder.pirateOffset + 2, -tfinder.upOffset}), tfinder.assumptions);
+        assertEquals("?", tfinder.tfstate.get(new Position(3, 1)));
+        assertEquals("?", tfinder.tfstate.get(new Position(3, 2)));
+        assertEquals("?", tfinder.tfstate.get(new Position(3, 3)));
+        assertEquals("X", tfinder.tfstate.get(new Position(3, 4)));
+    }
+
+    @Test
+    void testSolverSolvable() throws TimeoutException {
+        boolean expectedTrue = tfinder.solver.isSatisfiable(new VecInt(new int[]
+                {109, 28, -31, tfinder.coordToLineal(new Position(3, 3), tfinder.treasureFutureOffset)}));
+        assertTrue(expectedTrue);
     }
 
     @Test

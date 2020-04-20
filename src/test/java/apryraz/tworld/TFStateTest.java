@@ -24,7 +24,7 @@ class TFStateTest {
         state1.initializeState();
         for (int i = 1; i <= 3; i++) {
             for (int j = 1; j <= 3; j++) {
-                assertEquals("?", state1.get(i, j));
+                assertEquals("?", state1.get(new Position(i, j)));
             }
         }
     }
@@ -32,7 +32,7 @@ class TFStateTest {
     @Test
     void set() {
         state1.set(new Position(2, 1), "T");
-        assertEquals("T", state1.get(2, 1));
+        assertEquals("T", state1.get(new Position(2, 1)));
 
     }
 
@@ -49,4 +49,10 @@ class TFStateTest {
         assertEquals(state, TFState.loadStateFromFile(4, "tests/states/initial.txt"));
     }
 
+    @Test
+    void testPrintState() {
+        state2.printState();
+        state2.set(new Position(2, 1), "X");
+        state2.printState();
+    }
 }

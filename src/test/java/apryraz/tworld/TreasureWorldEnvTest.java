@@ -39,7 +39,7 @@ class TreasureWorldEnvTest {
         exp1 = new AMessage("movedto", "2", "3", "0");
         exp2 = new AMessage("notmovedto", "0", "3", "");
         exp3 = new AMessage("detected", "2", "3", "2");
-        exp4 = new AMessage("treasureis", "4", "4", "up");
+        exp4 = new AMessage("treasureis", "4", "4", "down");
         exp5 = new AMessage("nopirate", "2", "2", "");
         voidmsm = new AMessage("voidmsg", "", "", "");
         assertEquals(exp1, world.acceptMessage(msg1));

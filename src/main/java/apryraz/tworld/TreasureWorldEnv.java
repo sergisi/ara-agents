@@ -127,7 +127,7 @@ public class TreasureWorldEnv {
         Position agent = new Position(Integer.parseInt(msg.getComp(1)),
                 Integer.parseInt(msg.getComp(2)));
         if (isPirateInMyCell(agent) == 1) {
-            if (agent.y > treasure.y) {
+            if (agent.y < treasure.y) {
                 return new AMessage("treasureis", msg.getComp(1),
                         msg.getComp(2), "up");
             }

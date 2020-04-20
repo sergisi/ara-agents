@@ -81,11 +81,27 @@ public class MoreTreasureFinderTest {
     @Test
     void testInferenceIsOkay() throws TimeoutException, ContradictionException {
         ArrayList<Position> steps = new ArrayList<>();
-        steps.add(new Position(1, 1));
+        steps.add(new Position(2, 1));
         tfinder.setListOfSteps(steps);
         tfinder.runNextStep();
-        assertEquals("X", tfinder.tfstate.get(1, 1));
-        assertEquals("?", tfinder.tfstate.get(3, 1));
+        assertEquals("?", tfinder.tfstate.get(1, 3));
+        assertEquals("X", tfinder.tfstate.get(3, 1));
+    }
+
+    @Test
+    void testCoord() {
+        Position pos = new Position(3, 2);
+        int l = tfinder.coordToLineal(pos, tfinder.treasureFutureOffset);
+        assertEquals(tfinder.linealToCoord(l, tfinder.treasureFutureOffset), pos);
+        l = tfinder.coordToLineal(3, 2, tfinder.treasureFutureOffset);
+        assertEquals(tfinder.linealToCoord(l, tfinder.treasureFutureOffset), pos);
+    }
+
+    @Test
+    void testMoreCoord() {
+        int l = tfinder.treasureFutureOffset + 1;
+        Position pos = tfinder.linealToCoord(l, tfinder.treasureFutureOffset);
+        assertEquals(tfinder.coordToLineal(pos, tfinder.treasureFutureOffset), l);
     }
 
 }

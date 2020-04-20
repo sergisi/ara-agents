@@ -410,7 +410,7 @@ public class TreasureFinder {
     /**
      * Adds reletaed to two positions all the rules concerning detections
      *
-     * @param pos1 the first position, where the detector belogs
+     * @param pos1 the first position, where the detector belongs
      * @param pos2 the second position, where is compared
      * @throws ContradictionException by solver.
      */
@@ -509,8 +509,8 @@ public class TreasureFinder {
      **/
     public Position linealToCoord(int lineal, int offset) {
         lineal = lineal - offset + 1;
-        int x = ((lineal - 1) % worldDim) + 1;
-        int y = (lineal - 1) / worldDim + 1;
+        int x = (lineal - 1) / worldDim + 1;
+        int y = ((lineal - 1) % worldDim) + 1;
         return new Position(x, y);
     }
 

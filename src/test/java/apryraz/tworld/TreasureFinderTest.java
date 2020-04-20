@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 
 import static java.lang.System.exit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Class for testing the TreasureFinder agent
@@ -32,15 +31,15 @@ public class TreasureFinderTest {
      **/
     public void testMakeSimpleStep(TreasureFinder tAgent,
                                    TFState targetState) throws
-            IOException, ContradictionException, TimeoutException {
-        // Check (assert) whether the resulting state is equal to
-        //  the targetState after performing action runNextStep with bAgent
+            ContradictionException, TimeoutException {
         tAgent.runNextStep();
+
         TFState currentState = tAgent.getState();
         System.out.println("Expected");
         targetState.printState();
         System.out.println("Actually");
         currentState.printState();
+
         assertEquals(currentState, targetState);
     }
 
@@ -118,22 +117,14 @@ public class TreasureFinderTest {
                                    int numSteps, String fileSteps, String fileStates,
                                    String filePirates)
             throws IOException, ContradictionException, TimeoutException {
-        // You should make TreasureFinder and TreasureWorldEnv objects to  test.
-        // Then load sequence of target states, load sequence of steps into the bAgent
-        // and then test the sequence calling testMakeSimpleStep once for each step.
-        TreasureFinder TAgent = new TreasureFinder(wDim);
-        // load information about the World into the EnvAgent
-        TreasureWorldEnv EnvAgent = new TreasureWorldEnv(wDim, tX, tY, filePirates);
-        // Load list of states
+        TreasureFinder finder = new TreasureFinder(wDim);
+        TreasureWorldEnv worldEnv = new TreasureWorldEnv(wDim, tX, tY, filePirates);
         ArrayList<TFState> seqOfStates = loadListOfTargetStates(wDim, numSteps, fileStates);
 
-        // Set environment agent and load list of steps into the agent
-        TAgent.loadListOfSteps(numSteps, fileSteps);
-        TAgent.setEnvironment(EnvAgent);
-        // Test here the sequence of steps and check the resulting states with the
-        // ones in seqOfStates
-        for ( TFState state : seqOfStates) {
-            testMakeSimpleStep(TAgent, state);
+        finder.loadListOfSteps(numSteps, fileSteps);
+        finder.setEnvironment(worldEnv);
+        for (TFState state : seqOfStates) {
+            testMakeSimpleStep(finder, state);
         }
     }
 

@@ -1,13 +1,13 @@
 \begin{document}
-És defineixen les variables com:
+Es defineixen les variables com:
 \[
-Vars = \{tr^{t-1}_{i,j}, tr^{t}_{i,j}, tr^{t+1}_{i,j}, p_j^t, u^t, d_{i, j, k}^t\}
+Vars = \{tr^{t-1}_{i,j},   p_j^t, u^t, d_{i, j, k}^t, tr^{t+1}_{i,j}\}
 \]
 \begin{enumerate}
-	\item $tr^{t-1}_{i,j}$, $tr^{t}_{i,j}$ i $tr^{t+1}_{i,j}$ informació sobre l'estat del taulell. 
-	\item $d_{i, j, k}^t$ variable per modelitzar les diferents respostes del sensor, hi ha k variables on k és el nombre de respostes que pot donar el sensor $\{0,1,2,3\}$.
-	\item $p_j^t$ variable per controlar si ens trobem un pirata.
-	\item $u^t$, variable per a la resposta que ens dona el pirata.
+	\item $tr^{t-1}_{i,j}$ i $tr^{t+1}_{i,j}$ informació sobre l'estat del taulell. 
+	\item $d_{i, j, k}^t$ variable per modelitzar les diferents respostes del sensor, hi ha $k$ variables on $k$ és el nombre de respostes que pot donar el sensor: \[k \in \{0,1,2,3\}\]
+	\item $p_j^t$ variable per controlar si ens trobem un pirata en l'altura $j$.
+	\item $u^t$, variable per a la resposta que ens dóna el pirata.
 \end{enumerate}
 El nombre de variables és:
 \[
@@ -15,34 +15,37 @@ f(n) = n^2 + n + 1 + 4n^2 + n^2
 \]
 Llavors, la fórmula $\Gamma$ es defineix amb les següents normes:\\
 \\
-Clausula inicial de l'agent, com encara no hem començat a explorar el tresor pot estar en qualsevol lloc del món. 
+Clàusula inicial de l'agent, existeix al menys un tresor. Serveix per si es vol preguntar a l'agent si en la posició
+$(x, y)$ hi ha un tresor. 
 \begin{gather}
 \bigcup(tr_{i, j}^{t-1})
 \end{gather}
-Quan el sensor ens respon amb un 0 vol dir que el tresor no es troba a en un quadrat de 2 caselles al voltant de l'agent.
+Quan el sensor ens respon amb un 0 vol dir que el tresor no es troba en un quadrat de 2 caselles al voltant de l'agent.
 \begin{gather}
-d_{i, j, 0}^t \rightarrow \neg tr_{i', j'}, t.q. max(|i - i'|, |j - j'|) < 3
+d_{i, j, 0}^t \rightarrow \neg tr_{i', j'}^{t+1},\; t.q. max(|i - i'|, |j - j'|) < 3
 \end{gather}
-En el cas que ens respongui amb un 1 voldrà dir que el tressor no es trobara en cap altra posició que no sigui l'actual de l'agent.
+En el cas que ens respongui amb un 1 voldrà dir que el tresor no es trobarà en cap altra posició que no sigui l'actual de l'agent.
 \begin{gather}
-d_{i, j, 1}^t \rightarrow \neg tr_{i', j'}, t.q. i \neq i' \cup j \neq j'
+d_{i, j, 1}^t \rightarrow \neg tr_{i', j'}^{t+1},\; t.q. i \neq i' \cup j \neq j'
 \end{gather}
-També ens pot respondre amb un dós, cosa que vodrà dir que el tresor no es troba en cap de les posicions que disti més d'una casella de l'agent.
+Si la resposta fos un dos, el tresor no es troba en cap de les posicions adjacents, contant les diagonals.
 \begin{gather}
 d_{i, j, 2}^t \rightarrow \neg tr_{i', j'}, t.q. max(|i - i'|, |j - j'|) \neq 1
 \end{gather}
-I finalment quan el sensor ens respon amb el 3, voldrà dir que el tresor es troba en una casella que dista exactament dos de la casella en que es troba l'agent.
+I finalment quan el sensor ens respon amb el 3, voldrà dir que el tresor es troba en una casella la distància de la qual
+és exactament 2, del qual podem treure la norma:
 \begin{gather}
 d_{i, j, 3}^t \rightarrow \neg tr_{i', j'}, t.q. max(|i - i'|, |j - j'|) \neq 2
 \end{gather}
-Si hem trobat al pirata i ens respón que el tresor es troba a les caselles que están per sobre d'ell podrem descartar aquelles que estiguin per sota.
+Si hem trobat al pirata i ens ha respost que el tresor es troba a les caselles que estan per sobre d'ell podrem
+ descartar aquelles que estiguin per sota.
 \begin{gather}
 p_j^t \wedge u^t \rightarrow \neg tr_{i, j'}^{t+1}, t.q. j' \leq j
 \end{gather}
-I de mateixa forma pero a l'inreves, es a dir, si ens el trobem i ens diu que el tresor es troba en alguna de les caselles de sota seu, podrem descartar aquelles caselles que estiguin per sobre.
+De la mateixa forma, si ens trobem al pirata i ens diu que el tresor està a dalt, podrem descartar les posicions que
+estan per sobre.
 \begin{gather}
 p_j^t \wedge \neg u^t \rightarrow \neg tr_{i, j'}^{t+1}, t.q. j' > j
 \end{gather}
-Les variables en $t + 1$ actualitzen els valors que existeixen en $t-1$, es a dir, si 
-en $t+1$ existeix el valor $t^{t+1}$, llavors en el següent pas segur que existirà $t^{t-1}$.\\
+Les variables en $t + 1$ actualitzen els valors que existeixen en $t - 1$, i les variables que estan a $t-1$ es mantenen.
 \end{document}

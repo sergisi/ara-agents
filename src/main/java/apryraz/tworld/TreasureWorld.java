@@ -45,12 +45,13 @@ public class TreasureWorld {
 
     /**
      * This function should load five arguments from the command line:
-     * arg[0] = dimension of the word
-     * arg[1] = x coordinate of treasure position
-     * arg[2] = y coordinate of treasure position
-     * arg[3] = num of steps to perform
-     * arg[4] = file name with sequence of steps to perform
-     * arg[5] = file name with list of pirate positions
+     * @param args described as:
+     * args[0] = dimension of the word
+     * args[1] = x coordinate of treasure position
+     * args[2] = y coordinate of treasure position
+     * args[3] = num of steps to perform
+     * args[4] = file name with sequence of steps to perform
+     * args[5] = file name with list of pirate positions
      * @throws ContradictionException by solver
      * @throws TimeoutException by solver
      **/

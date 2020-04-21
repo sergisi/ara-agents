@@ -7,15 +7,23 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
 
+/**
+ * A class for representing the state of the finder.
+ */
 public class TFState {
+
     /**
      *
      **/
-
     int wDim;
     String[][] matrix;
     HashSet<Position> unknown;
 
+    /**
+     * Constructor of the class.
+     *
+     * @param dim the dimensions in the dim*dim world.
+     */
     public TFState(int dim) {
         wDim = dim;
         matrix = new String[wDim][wDim];
@@ -55,32 +63,6 @@ public class TFState {
         if ("X".equals(val))
             unknown.remove(pos);
         matrix[pos.y - 1][pos.x - 1] = val;
-    }
-
-    @Override
-    public String toString() {
-        return "TFState{" +
-                "wDim=" + wDim +
-                ", matrix=" + Arrays.toString(matrix) +
-                ", unknown=" + unknown +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TFState tfState = (TFState) o;
-        return wDim == tfState.wDim &&
-                Arrays.deepEquals(matrix, tfState.matrix) &&
-                Objects.equals(unknown, tfState.unknown);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(wDim, unknown);
-        result = 31 * result + Arrays.hashCode(matrix);
-        return result;
     }
 
     /**
@@ -129,5 +111,41 @@ public class TFState {
      */
     public HashSet<Position> getUnknownPosition() {
         return unknown;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return "TFState{" +
+                "wDim=" + wDim +
+                ", matrix=" + Arrays.toString(matrix) +
+                ", unknown=" + unknown +
+                '}';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TFState tfState = (TFState) o;
+        return wDim == tfState.wDim &&
+                Arrays.deepEquals(matrix, tfState.matrix) &&
+                Objects.equals(unknown, tfState.unknown);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(wDim, unknown);
+        result = 31 * result + Arrays.hashCode(matrix);
+        return result;
     }
 }

@@ -9,7 +9,7 @@ import java.io.IOException;
 
 
 /**
- * The class for the main program of the Barcenas World
+ * The class for the main program of the Treasure World
  **/
 public class TreasureWorld {
 
@@ -25,6 +25,8 @@ public class TreasureWorld {
      * @param numSteps    num of steps to perform
      * @param fileSteps   file name with sequence of steps to perform
      * @param filePirates file name with sequence of steps to perform
+     * @throws ContradictionException by solver
+     * @throws TimeoutException by solver
      **/
     public static void runStepsSequence(int wDim, int tx, int ty,
                                         int numSteps, String fileSteps, String filePirates) throws
@@ -49,6 +51,8 @@ public class TreasureWorld {
      * arg[3] = num of steps to perform
      * arg[4] = file name with sequence of steps to perform
      * arg[5] = file name with list of pirate positions
+     * @throws ContradictionException by solver
+     * @throws TimeoutException by solver
      **/
     public static void main(String[] args) throws
             ContradictionException, TimeoutException {

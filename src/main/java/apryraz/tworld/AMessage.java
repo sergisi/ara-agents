@@ -51,6 +51,9 @@ public class AMessage {
         return msg[c];
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -59,11 +62,17 @@ public class AMessage {
         return Arrays.equals(msg, aMessage.msg);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return Arrays.hashCode(msg);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "AMessage{" +

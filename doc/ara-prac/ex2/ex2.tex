@@ -1,0 +1,19 @@
+% !TeX spellcheck = ca
+\begin{document}
+	Els canvis del disseny més superficials han estat en funcions on utilitzaven parelles d'enters per a descriure
+	la posició, que s'han canviat a utilitzar \texttt{Position}, per a facilitar el pas de dades. També s'ha afegit 
+	a aquesta classe un mètode per a calcular la distància entre dos punts, que fa més llegible la creació de les
+	normes del detector.\\
+	
+	També s'ha afegit un mètode a \texttt{TFState}per a retornar un \texttt{HashSet} de totes les posicions on no
+	hi ha "X", que facilita la inferència.A més a més, s'han generat \texttt{toString}, \texttt{equals} 
+	i \texttt{hash} de totes les classes 	menys \texttt{TreasureFinder}, ja que es va creure que s'utilitzaria.
+	\subsection{Tests}
+	S'han afegit tests unitaris de totes les classes, inclús s'ha afegit més tests a la classe de \texttt{TFinder},
+	ja que amb funcions més petites era més fàcil veure els errors. Els primers tests són molt superficials, on
+	es mira si el nombre de clàusules i el número de variables generats en crear $\Gamma$ són correctes, i 
+	els següents miren si es fa correctament la inferència de variables. Els altres tests van servir per familiaritzar-se
+	amb el codi donat, mentre es creaven mètodes per a ajudar. Seguint la guia d'estil de Java, tots els mètodes
+	creats no privats s'han fet amb javadoc. Els mètodes privats que s'ha cregut que amb el nom i els paràmetres
+	no s'entendria s'ha fet un comentari.
+\end{document}

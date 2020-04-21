@@ -155,12 +155,15 @@ public class TreasureFinder {
     }
 
     /**
+     *
      * Execute the next step in the sequence of steps of the agent, and then
      * use the agent sensor to get information from the environment. In the
      * original Treasure World, this would be to use the Smelll Sensor to get
      * a binary answer, and then to update the current state according to the
      * result of the logical inferences performed by the agent with its formula.
-     **/
+     * @throws ContradictionException by solver
+     * @throws TimeoutException by solver
+     */
     public void runNextStep() throws
             ContradictionException, TimeoutException {
         pirateFound = 0;
@@ -303,6 +306,7 @@ public class TreasureFinder {
      * This function should add all the clauses stored in the list
      * futureToPast to the formula stored in solver.
      * Use the function addClause( VecInt ) to add each clause to the solver
+     * @throws ContradictionException by solver
      **/
     public void addLastFutureClausesToPastClauses() throws
             ContradictionException {
@@ -322,6 +326,7 @@ public class TreasureFinder {
      * An efficient version of this function should try to not add to the futureToPast
      * conclusions that were already added in previous steps, although this will not produce
      * any bad functioning in the reasoning process with the formula.
+     * @throws TimeoutException by solver
      **/
     public void performInferenceQuestions() throws
             TimeoutException {
@@ -348,6 +353,7 @@ public class TreasureFinder {
      * This function builds the initial logical formula of the agent and stores it
      * into the solver object.
      *
+     * @throws ContradictionException by solver
      * @return returns the solver object where the formula has been stored
      **/
     public ISolver buildGamma() throws
@@ -396,8 +402,8 @@ public class TreasureFinder {
     }
 
     /**
-     * Adds all rules of detector without the rule specified
-     * at addDetectorReturned1Rule
+     * Adds all rules of detector
+     * @throws ContradictionException by solver
      */
     protected void addDetectorRule() throws ContradictionException {
         for (int i1 = 1; i1 <= worldDim; i1++) {
@@ -414,7 +420,7 @@ public class TreasureFinder {
     }
 
     /**
-     * Adds reletaed to two positions all the rules concerning detections
+     * Adds related to two positions all the rules concerning detections
      *
      * @param pos1 the first position, where the detector belongs
      * @param pos2 the second position, where is compared
@@ -437,6 +443,7 @@ public class TreasureFinder {
     }
 
     private void ruleOffset(Position pos1, Position pos2, int detector) throws ContradictionException {
+        // Makes a specific rule of a detector and two positions
         int[] clause = new int[2];
         clause[0] = -coordToLineal(pos1, detectorOffsets[detector]);
         clause[1] = -coordToLineal(pos2, treasureFutureOffset);
@@ -457,7 +464,7 @@ public class TreasureFinder {
     }
 
     private int getTotalNumVariables() {
-        // initializate offset instances
+        // initialises offset instances and returns total number of variables.
         int worldLinealDim = worldDim * worldDim;
         treasurePastOffset = 1;
         pirateOffset = worldLinealDim + treasurePastOffset;
@@ -482,7 +489,7 @@ public class TreasureFinder {
      * @param y      y coordinate of the position variable to encode
      * @param offset initial value for the subset of position variables
      *               (past or future subset)
-     * @return the integer indentifer of the variable  b_[x,y] in the formula
+     * @return the integer identifier of the variable  b_[x,y] in the formula
      **/
     public int coordToLineal(int x, int y, int offset) {
         return ((x - 1) * worldDim) + (y - 1) + offset;
@@ -521,6 +528,10 @@ public class TreasureFinder {
         return new Position(x, y);
     }
 
+    /**
+     * Sets the list of steps. Used for testing.
+     * @param listOfSteps Lists of steps to be set.
+     */
     public void setListOfSteps(ArrayList<Position> listOfSteps) {
         this.listOfSteps = listOfSteps;
     }

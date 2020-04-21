@@ -14,11 +14,15 @@ import java.util.logging.Logger;
 
 import static java.lang.System.exit;
 
+/**
+ * Abstracts the environment of the Treasure World so the
+ * agent can ask questions about it.
+ */
 public class TreasureWorldEnv {
     /**
      * X,Y position of Treasure and world dimension
      **/
-    private int WorldDim;
+    private int worldDim;
 
     private List<Position> pirateList;
     private Position treasure;
@@ -33,7 +37,7 @@ public class TreasureWorldEnv {
      **/
     public TreasureWorldEnv(int dim, int tx, int ty, String piratesFile) {
         treasure = new Position(tx, ty);
-        WorldDim = dim;
+        worldDim = dim;
         pirateList = loadPiratesLocations(piratesFile);
     }
 
@@ -94,6 +98,7 @@ public class TreasureWorldEnv {
     }
 
     private AMessage getMoveTo(AMessage msg) {
+        // Creates a move message.
         Position agent = new Position(Integer.parseInt(msg.getComp(1)),
                 Integer.parseInt(msg.getComp(2)));
         if (withinLimits(agent)) {
@@ -106,6 +111,7 @@ public class TreasureWorldEnv {
     }
 
     private AMessage getDetectSat(AMessage msg) {
+        // Creates a detect message
         Position agent = new Position(Integer.parseInt(msg.getComp(1)),
                 Integer.parseInt(msg.getComp(2)));
         if (agent.equals(treasure)) {
@@ -124,18 +130,19 @@ public class TreasureWorldEnv {
     }
 
     private AMessage getTreasureUp(AMessage msg) {
+        // Creates a treasureis message
         Position agent = new Position(Integer.parseInt(msg.getComp(1)),
                 Integer.parseInt(msg.getComp(2)));
-        if (isPirateInMyCell(agent) == 1) {
-            if (agent.y < treasure.y) {
-                return new AMessage("treasureis", msg.getComp(1),
-                        msg.getComp(2), "up");
-            }
-            return new AMessage("treasureis", msg.getComp(1),
-                    msg.getComp(2), "down");
+        if (isPirateInMyCell(agent) != 1) {
+            return new AMessage("nopirate", msg.getComp(1),
+                    msg.getComp(2), "");
         }
-        return new AMessage("nopirate", msg.getComp(1),
-                msg.getComp(2), "");
+        if (agent.y < treasure.y) {
+            return new AMessage("treasureis", msg.getComp(1),
+                    msg.getComp(2), "up");
+        }
+        return new AMessage("treasureis", msg.getComp(1),
+                msg.getComp(2), "down");
     }
 
     /**
@@ -162,41 +169,60 @@ public class TreasureWorldEnv {
      * @return true if position is within the limits of the world
      **/
     public boolean withinLimits(Position p) {
-        return (p.x >= 1 && p.x <= WorldDim && p.y >= 1 && p.y <= WorldDim);
+        return (p.x >= 1 && p.x <= worldDim && p.y >= 1 && p.y <= worldDim);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "TreasureWorldEnv{" +
-                "WorldDim=" + WorldDim +
+                "WorldDim=" + worldDim +
                 ", pirateList=" + pirateList +
                 ", treasure=" + treasure +
                 '}';
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TreasureWorldEnv that = (TreasureWorldEnv) o;
-        return WorldDim == that.WorldDim &&
+        return worldDim == that.worldDim &&
                 Objects.equals(pirateList, that.pirateList) &&
                 Objects.equals(treasure, that.treasure);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
-        return Objects.hash(WorldDim, pirateList, treasure);
+        return Objects.hash(worldDim, pirateList, treasure);
     }
 
+    /**
+     * Getter of world dimensions
+     * @return world dimenisons
+     */
     public int getWorldDim() {
-        return WorldDim;
+        return worldDim;
     }
 
+    /*
+     * @return the position of the treasure
+     */
     public Position getTreasure() {
         return treasure;
     }
 
+    /**
+     * @return all the positions of the pirates.
+     */
     public List<Position> getPirateList() {
         return pirateList;
     }
